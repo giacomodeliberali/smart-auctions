@@ -55,35 +55,32 @@ contract VickeryAuction is HashGenerator {
     // Indicate if this contract has been finalized by the owner
     bool isFinalized;
 
-    // Indicate if there are at least 2 valid bidders in the before the finalize()
-    bool haveEnoughBidders;
-
     // Indicates the number of bidders that opened their bid correctly
     uint validBidders;
 
     // Indicate that the state of the auction has beemn updated
-    event stateUpdatedEvent(PhaseType indexed state);
+    event StateUpdatedEvent(PhaseType indexed state);
 
     // Indicate that a bidder requested his withdrawal
-    event withdrawalEvent(address, uint);
+    event WithdrawalEvent(address, uint);
 
     // Indicate that a bidder committed a blind bid
     event BidEvent(address);
 
     // Indicate that a bidder opened his blind bid
-    event openBidEvent(address, uint, uint);
+    event OpenBidEvent(address, uint, uint);
 
     // Indicate that a bidder submitted the wrong nonce/amount
-    event invalidNonceEvent(address, uint, uint);
+    event InvalidNonceEvent(address, uint, uint);
 
     // Indicate that the auction has been finalized
-    event finalizeEvent(uint);
+    event FinalizeEvent(uint);
 
     // Fired whenever a refound is returned to a bidder
-    event refoundEvent(address, uint indexed amount, string);
+    event RefoundEvent(address, uint indexed amount, string);
 
     // Fired when in finalize there is less than 2 valid bidders
-    event notEnoughValidBiddersEvent(uint);
+    event NotEnoughValidBiddersEvent(uint);
 
     // Initializ the contract with required parameters
     constructor(uint _commitmentPhaseLength, uint _whithdrawlPhaseLength, uint _bidPhaseLangth, uint _deposit) public {
@@ -95,14 +92,13 @@ contract VickeryAuction is HashGenerator {
         owner = msg.sender;
         state = PhaseType.Commitment;
         isFinalized = false;
-        haveEnoughBidders = false;
         validBidders = 0;
     }
 
     function updateState(PhaseType newstate) private {
         if (state != newstate) {
             state = newstate;
-            emit stateUpdatedEvent(state);
+            emit StateUpdatedEvent(state);
         }
     }
 
@@ -162,7 +158,7 @@ contract VickeryAuction is HashGenerator {
         deposits[msg.sender].refoundedAmount = refoundedAmount;
         msg.sender.transfer(refoundedAmount);
 
-        emit withdrawalEvent(msg.sender, deposits[msg.sender].refoundedAmount);
+        emit WithdrawalEvent(msg.sender, deposits[msg.sender].refoundedAmount);
     }
 
     // Open your bid by submitting the valid nonce
@@ -179,15 +175,15 @@ contract VickeryAuction is HashGenerator {
         if(!deposits[msg.sender].isHashMatching){
             // You submitted an invalid hash
             msg.sender.transfer(msg.value);
-            emit refoundEvent(msg.sender, msg.value, "Refound msg.value since hash mismatch.");
-            emit invalidNonceEvent(msg.sender, msg.value, nonce);
+            emit RefoundEvent(msg.sender, msg.value, "Refound msg.value since hash mismatch.");
+            emit InvalidNonceEvent(msg.sender, msg.value, nonce);
             return;
         }
 
         deposits[msg.sender].bidAmount = msg.value;
         validBidders += 1;
 
-        emit openBidEvent(msg.sender, nonce, msg.value);
+        emit OpenBidEvent(msg.sender, nonce, msg.value);
     }
 
     function finalize() external ensureFreshState payable {
@@ -195,21 +191,16 @@ contract VickeryAuction is HashGenerator {
         require(state == PhaseType.Closed, "You can not finalize the auction now.");
         require(msg.sender == owner, "Only the owner can finalize this auction.");
 
-        haveEnoughBidders = true;
         if (validBidders < 2) {
             for (uint i = 0; i < bidders.length; i++) {
                 if (deposits[bidders[i]].refoundedAmount == 0) {
                     uint refoundTotal = deposits[bidders[i]].deposit + deposits[bidders[i]].bidAmount;
                     deposits[bidders[i]].bidder.transfer(refoundTotal);
-                    emit refoundEvent(deposits[bidders[i]].bidder, refoundTotal, "Not enough bidders.");
+                    emit RefoundEvent(deposits[bidders[i]].bidder, refoundTotal, "Not enough bidders.");
                 }
             }
-            haveEnoughBidders = false;
-        }
-
-        if(!haveEnoughBidders){
             // No enough valid bidders. All have been refounded
-            emit notEnoughValidBiddersEvent(validBidders);
+            emit NotEnoughValidBiddersEvent(validBidders);
             return;
         }
 
@@ -243,19 +234,19 @@ contract VickeryAuction is HashGenerator {
                    // pay only second price
                    uint totalRefound = deposits[bidders[i]].deposit + (deposits[bidders[i]].bidAmount - secondPrice);
                    maxBidder.transfer(totalRefound);
-                   emit refoundEvent(deposits[bidders[i]].bidder, totalRefound, "Refound winning bidder with deposit and second price difference.");
+                   emit RefoundEvent(deposits[bidders[i]].bidder, totalRefound, "Refound winning bidder with deposit and second price difference.");
                 } else {
                     // refound deposit and commitment
                     uint totalRefound = deposits[bidders[i]].deposit + deposits[bidders[i]].bidAmount;
                     deposits[bidders[i]].bidder.transfer(totalRefound);
-                    emit refoundEvent(deposits[bidders[i]].bidder, totalRefound, "Refound loosing bidder with deposit and bid amount.");
+                    emit RefoundEvent(deposits[bidders[i]].bidder, totalRefound, "Refound loosing bidder with deposit and bid amount.");
                 }
             }
         }
 
         isFinalized = true;
 
-        emit finalizeEvent(validBidders);
+        emit FinalizeEvent(validBidders);
 
     }
 

@@ -55,11 +55,7 @@ contract("DutchAuction", accounts => {
     var currentPrice = await dutchAuction.getCurrentPrice();
     var result = await dutchAuction.makeBid({ from: accounts[1], value: currentPrice + 1 });
 
-    assert.equal(
-      result.logs[0].event,
-      "hasBidder",
-      "Should accept the valid bid"
-    );
+    truffleAssert.eventEmitted(result, "HasBidderEvent");
 
     assert.equal(
       await dutchAuction.isClosed(),
@@ -85,11 +81,7 @@ contract("DutchAuction", accounts => {
       "Should not accept this bid"
     );
 
-    assert.equal(
-      result.logs[0].event,
-      "hasBidder",
-      "Should accept the first bid"
-    );
+    truffleAssert.eventEmitted(result, "HasBidderEvent");
   });
 
 

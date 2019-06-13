@@ -31,7 +31,7 @@ contract DutchAuction {
     bool isReservePriceReached;
 
     // Fired when the bidder submits the winning bid
-    event hasBidder(address, uint, uint);
+    event HasBidderEvent(address, uint, uint);
 
     /// Create a new instance    
     constructor(uint _reservePrice, uint _initialPrice, uint _lastForBlocks, IDecrease _strategy) public {
@@ -63,6 +63,7 @@ contract DutchAuction {
         return false;
     }
 
+    // Return the current price of the good
     function getCurrentPrice() public view returns(uint){
         return strategy.getPrice(initialPrice, reservePrice, deployBlockNumber, deployBlockNumber + lastForBlocks, block.number);
     }
@@ -80,7 +81,7 @@ contract DutchAuction {
             require(msg.value >= currentPrice, "You need to send more wei.");
             bidder = msg.sender;
             owner.transfer(msg.value);
-            emit hasBidder(msg.sender, currentPrice, msg.value);
+            emit HasBidderEvent(msg.sender, currentPrice, msg.value);
         }
     }
 

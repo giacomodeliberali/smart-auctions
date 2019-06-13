@@ -111,7 +111,7 @@ contract("VickeryAuction", accounts => {
     let initialBalance = await web3.eth.getBalance(user3);
 
     tx = await vickeryAuction.withdrawal({ from: user3 });
-    truffleAssert.eventEmitted(tx, 'withdrawalEvent');
+    truffleAssert.eventEmitted(tx, 'WithdrawalEvent');
 
     let refundedBalance = await web3.eth.getBalance(user3);
 
@@ -127,12 +127,12 @@ contract("VickeryAuction", accounts => {
     await advanceBlock();
 
     tx = await vickeryAuction.openBid(12345, { from: user1, value: "10000000000000000000" });
-    truffleAssert.eventEmitted(tx, 'openBidEvent');
+    truffleAssert.eventEmitted(tx, 'OpenBidEvent');
 
     // wrong nonce
     tx = await vickeryAuction.openBid(666, { from: user2, value: "20000000000000000000" });
-    truffleAssert.eventNotEmitted(tx, 'openBidEvent');
-    truffleAssert.eventEmitted(tx, 'invalidNonceEvent');
+    truffleAssert.eventNotEmitted(tx, 'OpenBidEvent');
+    truffleAssert.eventEmitted(tx, 'InvalidNonceEvent');
     await truffleAssert.reverts(
       vickeryAuction.openBid(12345, { from: user2, value: "20000000000000000000" }),
       null,
@@ -140,15 +140,15 @@ contract("VickeryAuction", accounts => {
     );
 
     tx = await vickeryAuction.openBid(12345, { from: user4, value: "40000000000000000000" });
-    truffleAssert.eventEmitted(tx, 'openBidEvent');
+    truffleAssert.eventEmitted(tx, 'OpenBidEvent');
 
     await advanceBlock();
 
     tx = await vickeryAuction.finalize();
-    truffleAssert.eventEmitted(tx, 'finalizeEvent');
+    truffleAssert.eventEmitted(tx, 'FinalizeEvent');
     //truffleAssert.eventEmitted(tx, 'refoundEvent', { amount: 31000000000000000000 });
     //truffleAssert.eventEmitted(tx, 'refoundEvent', { amount: 11000000000000000000 });
-    truffleAssert.eventEmitted(tx, 'refoundEvent', evt => {
+    truffleAssert.eventEmitted(tx, 'RefoundEvent', evt => {
       let refundAmount = evt.amount.toString();
       // refund must be 11 eth and 31 eth
       return refundAmount == "31000000000000000000" || refundAmount == "11000000000000000000";
@@ -217,23 +217,23 @@ contract("VickeryAuction", accounts => {
     await advanceBlock();
 
     tx = await vickeryAuction.openBid(12345, { from: user1, value: "10000000000000000000" });
-    truffleAssert.eventEmitted(tx, 'openBidEvent');
+    truffleAssert.eventEmitted(tx, 'OpenBidEvent');
 
     // wrong nonce
     tx = await vickeryAuction.openBid(666, { from: user2, value: "20000000000000000000" });
-    truffleAssert.eventNotEmitted(tx, 'openBidEvent');
-    truffleAssert.eventEmitted(tx, 'invalidNonceEvent');
+    truffleAssert.eventNotEmitted(tx, 'OpenBidEvent');
+    truffleAssert.eventEmitted(tx, 'InvalidNonceEvent');
 
     tx = await vickeryAuction.openBid(666, { from: user4, value: "40000000000000000000" });
-    truffleAssert.eventNotEmitted(tx, 'openBidEvent');
-    truffleAssert.eventEmitted(tx, 'invalidNonceEvent');
+    truffleAssert.eventNotEmitted(tx, 'OpenBidEvent');
+    truffleAssert.eventEmitted(tx, 'InvalidNonceEvent');
 
     await advanceBlock();
 
     let balance = await web3.eth.getBalance(user1);
     tx = await vickeryAuction.finalize();
-    truffleAssert.eventNotEmitted(tx, 'finalizeEvent');
-    truffleAssert.eventEmitted(tx, 'notEnoughValidBiddersEvent');
+    truffleAssert.eventNotEmitted(tx, 'FinalizeEvent');
+    truffleAssert.eventEmitted(tx, 'NotEnoughValidBiddersEvent');
     let newBalance = await web3.eth.getBalance(user1);
 
     assert.equal(
