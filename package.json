@@ -1,0 +1,29 @@
+{
+  "name": "smart-auctions",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "develop": "truffle develop",
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giacomodeliberali/smart-auctions.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/giacomodeliberali/smart-auctions/issues"
+  },
+  "homepage": "https://github.com/giacomodeliberali/smart-auctions#readme",
+  "dependencies": {
+    "truffle": "^5.0.22",
+    "truffle-assertions": "^0.9.1",
+    "truffle-test-helpers": "^0.2.0"
+  }
+}
