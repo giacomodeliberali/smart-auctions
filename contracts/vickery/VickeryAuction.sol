@@ -167,6 +167,7 @@ contract VickeryAuction is HashGenerator {
         require(state == PhaseType.Opening, "You can not open your bid now.");
         require(deposits[msg.sender].exists, "You have no bid.");
         require(!deposits[msg.sender].isOpened, "You already opened your bid.");
+        require(deposits[msg.sender].refoundedAmount == 0, "You withdrawn your deposit.");
 
         bytes32 calculatedHash = super.generateHash(msg.value, nonce);
         deposits[msg.sender].isHashMatching = calculatedHash == deposits[msg.sender].hash;
