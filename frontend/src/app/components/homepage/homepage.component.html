@@ -1,0 +1,52 @@
+<div fxLayout="column wrap" fxLayoutAlign="center center" class="p-15" fxFill fxLayoutGap="15px">
+
+  <div>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Prerequisites</mat-card-title>
+        <mat-card-subtitle>
+          All prerequisites that you will need to run this project
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <ul>
+          <li>Uno</li>
+          <li>Due</li>
+        </ul>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div fxLayout.xs="column" fxLayout="row" fxLayoutGap="15px">
+
+    <mat-card fxFlex="1 0 calc(50% - 15px)">
+      <mat-card-header>
+        <mat-card-title>Dutch Auction</mat-card-title>
+        <mat-card-subtitle>
+          An auction where the good price is initially set to an high value than gradually decreased
+          until a given threshold
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-actions>
+        <button mat-button color="primary">GO</button>
+      </mat-card-actions>
+    </mat-card>
+
+    <mat-card fxFlex="1 0 calc(50% - 15px)">
+      <mat-card-header>
+        <mat-card-title>Vickery Auction</mat-card-title>
+        <mat-card-subtitle>
+          A blind auction where bidders initially submits a commitment of payment, and only after the
+          auction end the bidder who submitted the highest valid commitment will be the winner and will pay the second
+          price
+        </mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-actions>
+        <button mat-button color="primary">GO</button>
+      </mat-card-actions>
+    </mat-card>
+
+  </div>
+
+
+</div>
