@@ -1,8 +1,9 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./HashGenerator.sol";
+import "../AbtractAuction.sol";
 
-contract VickeryAuction is HashGenerator {
+contract VickeryAuction is HashGenerator, AbtractAuction {
 
     // The auction state enum
     enum PhaseType {
@@ -40,9 +41,6 @@ contract VickeryAuction is HashGenerator {
     // The block number when this contract is deployed at
     uint deployBlockNumber;
 
-    // The owner of this auction
-    address payable owner;
-
     // Contains the mapping of all the people that make a commitment
     mapping(address => BlindBid) deposits;
 
@@ -52,7 +50,7 @@ contract VickeryAuction is HashGenerator {
     // The status of the auction
     PhaseType public state;
 
-    // Indicate if this contract has been finalized by the owner
+    // Indicate if this contract has been finalized by the seller
     bool isFinalized;
 
     // Indicates the number of bidders that opened their bid correctly
@@ -83,13 +81,15 @@ contract VickeryAuction is HashGenerator {
     event NotEnoughValidBiddersEvent(uint);
 
     // Initializ the contract with required parameters
-    constructor(uint _commitmentPhaseLength, uint _whithdrawlPhaseLength, uint _bidPhaseLangth, uint _deposit) public {
+    constructor(string memory _itemName, address payable _seller,
+                uint _commitmentPhaseLength, uint _whithdrawlPhaseLength,
+                uint _bidPhaseLangth, uint _deposit)
+    AbtractAuction(_itemName, _seller, msg.sender, "Dutch") public {
         commitmentPhaseLength = _commitmentPhaseLength;
         whithdrawlPhaseLength = _whithdrawlPhaseLength;
         bidPhaseLangth = _bidPhaseLangth;
         deposit = _deposit;
         deployBlockNumber = block.number;
-        owner = msg.sender;
         state = PhaseType.Commitment;
         isFinalized = false;
         validBidders = 0;
@@ -190,7 +190,7 @@ contract VickeryAuction is HashGenerator {
     function finalize() external ensureFreshState payable {
 
         require(state == PhaseType.Closed, "You can not finalize the auction now.");
-        require(msg.sender == owner, "Only the owner can finalize this auction.");
+        require(msg.sender == seller, "Only the seller can finalize this auction.");
 
         if (validBidders < 2) {
             for (uint i = 0; i < bidders.length; i++) {

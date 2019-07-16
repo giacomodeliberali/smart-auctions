@@ -17,7 +17,7 @@ contract("VickeryAuction", accounts => {
   var minDeposit = "1000000000000000000"; // 1 eth
 
   beforeEach(async () => {
-    vickeryAuction = await VickeryAuction.new(phasesLength, phasesLength, phasesLength, minDeposit);
+    vickeryAuction = await VickeryAuction.new("Unit Tests al KG", accounts[0], phasesLength, phasesLength, phasesLength, minDeposit);
   });
 
   it("Should be deployed correctly in Commitment phase", async () => {

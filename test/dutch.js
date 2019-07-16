@@ -9,7 +9,7 @@ contract("DutchAuction", accounts => {
 
   beforeEach(async () => {
     linearStrategy = await LinearStrategy.new();
-    dutchAuction = await DutchAuction.new(100, 1000, 5, linearStrategy.address);
+    dutchAuction = await DutchAuction.new("Unit Tests al KG", accounts[0], 100, 1000, 5, linearStrategy.address);
   });
 
   it("Should be deployed correctly", async () => {
@@ -20,7 +20,7 @@ contract("DutchAuction", accounts => {
     );
   });
 
-  it("Should not be terminated by someone who is not the owner", async () => {
+  it("Should not be terminated by someone who is not the seller", async () => {
     await dutchAuction.terminate({ from: accounts[1] })
     assert.equal(
       await dutchAuction.isClosed(),
@@ -29,7 +29,7 @@ contract("DutchAuction", accounts => {
     );
   });
 
-  it("Should be terminated by the owner", async () => {
+  it("Should be terminated by the seller", async () => {
     await dutchAuction.terminate({ from: accounts[0] })
     assert.equal(
       await dutchAuction.isClosed(),

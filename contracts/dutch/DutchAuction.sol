@@ -1,8 +1,9 @@
 pragma solidity >= 0.4 .21 < 0.6 .0;
 
 import "./IDecrease.sol";
+import "../AbtractAuction.sol";
 
-contract DutchAuction {
+contract DutchAuction is AbtractAuction {
     // The address of the winning bidder
     address bidder;
 
@@ -21,11 +22,8 @@ contract DutchAuction {
     // The decrease price strategy
     IDecrease strategy;
 
-    // The owner of this auction
-    address payable public owner;
-
-    // Indicate if this auction has been closed by the owner
-    bool isClosedByOwner;
+    // Indicate if this auction has been closed by the seller
+    bool isClosedBySeller;
 
     // Indicate if the reserve price has been reached
     bool isReservePriceReached;
@@ -34,21 +32,24 @@ contract DutchAuction {
     event HasBidderEvent(address, uint, uint);
 
     /// Create a new instance    
-    constructor(uint _reservePrice, uint _initialPrice, uint _lastForBlocks, IDecrease _strategy) public {
+    constructor(string memory _itemName, address payable _seller, uint _reservePrice, uint _initialPrice, uint _lastForBlocks, IDecrease _strategy) 
+    AbtractAuction(_itemName, _seller, msg.sender, "Dutch") public {
         reservePrice = _reservePrice;
         initialPrice = _initialPrice;
         lastForBlocks = _lastForBlocks;
         strategy = _strategy;
         deployBlockNumber = block.number;
-        isClosedByOwner = false;
-        isReservePriceReached = false;
-        owner = msg.sender;
+        isClosedBySeller = false;
+        isReservePriceReached = false;        
     }
 
     // Indicate if this auction is still open or not
     function isClosed() public view returns(bool) {
 
-        if(isClosedByOwner)
+        if(isOver)
+            return true;
+
+        if(isClosedBySeller)
             return true;
 
         if(block.number >= (deployBlockNumber + lastForBlocks))
@@ -80,15 +81,15 @@ contract DutchAuction {
         } else {
             require(msg.value >= currentPrice, "You need to send more wei.");
             bidder = msg.sender;
-            owner.transfer(msg.value);
+            seller.transfer(msg.value);
             emit HasBidderEvent(msg.sender, currentPrice, msg.value);
         }
     }
 
-    // Terminate this auction (only the owner can call this function)
+    // Terminate this auction (only the seller can call this function)
     function terminate() external {
-        if (msg.sender == owner) {
-            isClosedByOwner = true;
+        if (msg.sender == owner || msg.sender == seller) {
+            isClosedBySeller = true;
         }
     }
 
