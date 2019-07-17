@@ -10,8 +10,14 @@ export const WEB3 = new InjectionToken<Web3>('web3Token', {
             //return new Web3(new Web3.providers.HttpProvider('http://localhost:7545'));
             const _w = window as any;
 
+            const options = {
+                transactionConfirmationBlocks: 1,
+                transactionBlockTimeout: 5,
+                transactionPollingTimeout: 480
+            };
+
             if (_w.ethereum)
-                return new Web3(_w.ethereum);
+                return new Web3(_w.ethereum, null, options);
 
 
             return new Web3(_w.web3.currentProvider);

@@ -1,4 +1,5 @@
 export class DutchAuction {
+  address: string;
   itemName: string;
   seller: string;
   reservePrice: number;
@@ -6,7 +7,7 @@ export class DutchAuction {
   lastForBlocks: number;
   strategy: string;
   isClosed: boolean;
-  currentPrice: number;
+  currentPrice: string;
   isOver: boolean;
   owner: string;
   auctionType: string;

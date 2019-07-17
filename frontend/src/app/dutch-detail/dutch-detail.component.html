@@ -8,6 +8,15 @@
             <mat-card-content>
 
                 <div *ngIf="dutch">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Contract address"
+                                    [value]="dutch.address">
+                            </mat-form-field>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-6">
 
@@ -28,7 +37,7 @@
 
                             <mat-form-field>
                                 <input matInput [readonly]="true" placeholder="State"
-                                    [value]="dutch.isClosed || dutch.isOver ? 'Closed' : 'Open'">
+                                    [value]="dutch.isClosed ? 'Closed' : 'Open'">
                             </mat-form-field>
                         </div>
                         <div class="col-md-6">
@@ -49,7 +58,8 @@
                         </div>
                     </div>
 
-                    <div class="text-right" *ngIf="dutch.owner == accountService.currentAccount || dutch.seller == accountService.currentAccount">
+                    <div class="text-right"
+                        *ngIf="dutch.owner == accountService.currentAccount || dutch.seller == accountService.currentAccount">
                         <button mat-raised-button color="accent">Terminate</button>
                     </div>
 
@@ -59,7 +69,7 @@
         </mat-card>
 
         <mat-expansion-panel style="margin-top: 15px;" [expanded]="true"
-            *ngIf="bid && dutch && !dutch.isClosed && !dutch.isOver">
+            *ngIf="bid && dutch && !dutch.isClosed">
             <mat-expansion-panel-header>
                 <mat-panel-title>
                     Make a bid
@@ -80,7 +90,7 @@
                 </div>
             </div>
             <div class="text-right">
-                <button mat-raised-button color="accent">Make bid</button>
+                <button mat-raised-button color="accent" (click)="makeBid()">Make bid</button>
             </div>
 
         </mat-expansion-panel>

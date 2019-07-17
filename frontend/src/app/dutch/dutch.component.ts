@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit, NgZone, Inject } from '@angular/core';
 import { ContractsService } from '../services/contracts.service';
 import LinearStrategyJson from '../../../../build/contracts/LinearStrategy.json';
 import AuctionsHouseJson from '../../../../build/contracts/AuctionsHouse.json';
@@ -6,6 +6,8 @@ import { AccountService } from '../services/account.service';
 import { MatSnackBar } from '@angular/material';
 import { Router } from '@angular/router';
 import { DutchAuction } from '../models/dutch-auction.model';
+import Web3 from 'web3';
+import { WEB3 } from '../services/tokens';
 
 
 
@@ -16,14 +18,15 @@ import { DutchAuction } from '../models/dutch-auction.model';
 })
 export class DutchComponent {
 
-  private dutch: DutchAuction;
+  public dutch: DutchAuction;
 
   constructor(
     private contractService: ContractsService,
     private accountService: AccountService,
     private snackBar: MatSnackBar,
     private router: Router,
-    private ngZone: NgZone) {
+    private ngZone: NgZone,
+    @Inject(WEB3) private web3: Web3) {
 
     this.dutch = new DutchAuction({
       initialPrice: 2000,
@@ -33,37 +36,64 @@ export class DutchComponent {
     });
   }
 
-  async deploy() {
+  async deployLinearStrategy() {
+    const contract = new this.web3.eth.Contract(LinearStrategyJson.abi as any);
+
+    const gas = await contract.deploy({
+      data: LinearStrategyJson.bytecode
+    }).estimateGas();
+
+
+    contract.deploy({
+      data: LinearStrategyJson.bytecode
+    })
+      .send({
+        from: this.accountService.currentAccount,
+        gas: gas
+      })
+      .on('confirmation', async (confirmationNumber, receipt) => {
+        this.ngZone.run(() => {
+          const contractAddress = receipt.contractAddress;
+          const instance = new this.web3.eth.Contract(LinearStrategyJson.abi as any, contractAddress);
+          this.dutch.strategy = instance.address;
+          this.snackBar.open("The LinearStrategy has been deployed", "Ok", { duration: 5000 });
+        });
+      })
+      .on('error', (error) => {
+        console.error(error)
+      });
+  }
+
+  async deployDutchAuction() {
+
     if (!this.dutch.strategy) {
-      const linearStrategy = await this.contractService.deployContract(
-        LinearStrategyJson.abi,
-        LinearStrategyJson.bytecode,
-        this.accountService.currentAccount
-      );
-      this.dutch.strategy = linearStrategy.address;
-      this.snackBar.open("The linear strategy has been deployed", "Ok", { duration: 5000 });
+      this.snackBar.open("First deploy or select a strategy", "Ok", { duration: 5000 });
+      return;
     }
 
-    const house = this.contractService.getContractAtAddress(AuctionsHouseJson.abi, this.accountService.houseCurrentAccount);
-    house.methods.newDutch(
+
+    const contract = this.contractService.getContractAtAddress(AuctionsHouseJson.abi, this.accountService.houseCurrentAccount);
+
+    contract.events.NewAuction({},()=>{
+      console.log("NewAuction event")
+    });
+
+    const dutchAddress = await contract.methods.newDutch(
       this.dutch.itemName,
       this.dutch.seller,
       this.dutch.reservePrice,
       this.dutch.initialPrice,
       this.dutch.lastForBlocks,
       this.dutch.strategy
-    )
-      .send({ from: this.accountService.currentAccount })
-      .on('confirmation', async (confirmationNumber, receipt) => {
-        this.ngZone.run(() => {
-          this.snackBar.open("The dutch auction has been deployed", "Ok", { duration: 5000 });
-          this.router.navigate(['/']);
-        });
-      })
-      .on('error', (error) => {
-        console.error(error)
-      });
+    ).call();
+    console.log("DUTCH ADD => " + dutchAddress)
 
+    contract.getPastEvents("NewAuction", {}).then(e => console.log("PAST EVENTS => ", e));
+
+    this.ngZone.run(() => {
+      this.snackBar.open("The dutch auction has been deployed", "Ok", { duration: 5000 });
+      this.router.navigate(['/']);
+    });
 
 
   }

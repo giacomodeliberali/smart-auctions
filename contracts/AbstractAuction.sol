@@ -1,6 +1,6 @@
 pragma solidity >= 0.4 .21 < 0.6 .0;
 
-contract AbtractAuction {
+contract AbstractAuction {
 
     // The owner of this auction
     address payable public owner;

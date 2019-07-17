@@ -1,9 +1,9 @@
 pragma solidity >= 0.4 .21 < 0.6 .0;
 
 import "./IDecrease.sol";
-import "../AbtractAuction.sol";
+import "../AbstractAuction.sol";
 
-contract DutchAuction is AbtractAuction {
+contract DutchAuction is AbstractAuction {
     // The address of the winning bidder
     address bidder;
 
@@ -33,7 +33,7 @@ contract DutchAuction is AbtractAuction {
 
     /// Create a new instance    
     constructor(string memory _itemName, address payable _seller, uint _reservePrice, uint _initialPrice, uint _lastForBlocks, IDecrease _strategy) 
-    AbtractAuction(_itemName, _seller, msg.sender, "Dutch") public {
+    AbstractAuction(_itemName, _seller, msg.sender, "Dutch") public {
         reservePrice = _reservePrice;
         initialPrice = _initialPrice;
         lastForBlocks = _lastForBlocks;

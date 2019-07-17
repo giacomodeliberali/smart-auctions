@@ -1,9 +1,9 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./HashGenerator.sol";
-import "../AbtractAuction.sol";
+import "../AbstractAuction.sol";
 
-contract VickeryAuction is HashGenerator, AbtractAuction {
+contract VickeryAuction is HashGenerator, AbstractAuction {
 
     // The auction state enum
     enum PhaseType {
@@ -84,7 +84,7 @@ contract VickeryAuction is HashGenerator, AbtractAuction {
     constructor(string memory _itemName, address payable _seller,
                 uint _commitmentPhaseLength, uint _whithdrawlPhaseLength,
                 uint _bidPhaseLangth, uint _deposit)
-    AbtractAuction(_itemName, _seller, msg.sender, "Dutch") public {
+    AbstractAuction(_itemName, _seller, msg.sender, "Dutch") public {
         commitmentPhaseLength = _commitmentPhaseLength;
         whithdrawlPhaseLength = _whithdrawlPhaseLength;
         bidPhaseLangth = _bidPhaseLangth;
