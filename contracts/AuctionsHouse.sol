@@ -14,7 +14,7 @@ contract AuctionsHouse {
         owner = msg.sender;
     }
 
-    event NewAuction(address);
+    event NewAuction(address _address, string _type, string _itemName);
 
 
     // Create a new DutchAuction
@@ -26,7 +26,7 @@ contract AuctionsHouse {
             _lastForBlocks, _strategy
         );
 
-        emit NewAuction(address(auction));
+        emit NewAuction(address(auction), "Dutch", _itemName);
     }
 
     // Create a new VickeryAuction
@@ -40,7 +40,7 @@ contract AuctionsHouse {
             _bidPhaseLangth, _deposit
         );
 
-        emit NewAuction(address(auction));
+        emit NewAuction(address(auction), "Vickery", _itemName);
     }
 
 }

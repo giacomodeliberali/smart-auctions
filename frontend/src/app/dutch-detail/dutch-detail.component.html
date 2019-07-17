@@ -1,0 +1,89 @@
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Dutch auction</mat-card-title>
+                <mat-card-subtitle>You can interact with this contract</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+
+                <div *ngIf="dutch">
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Item name" [value]="dutch.itemName">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Seller address" [value]="dutch.seller">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="State"
+                                    [value]="dutch.isClosed || dutch.isOver ? 'Closed' : 'Open'">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Owner" [value]="dutch.owner">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Current price"
+                                    [value]="dutch.currentPrice + ' wei'">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="text-right" *ngIf="dutch.owner == accountService.currentAccount || dutch.seller == accountService.currentAccount">
+                        <button mat-raised-button color="accent">Terminate</button>
+                    </div>
+
+                </div>
+
+            </mat-card-content>
+        </mat-card>
+
+        <mat-expansion-panel style="margin-top: 15px;" [expanded]="true"
+            *ngIf="bid && dutch && !dutch.isClosed && !dutch.isOver">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    Make a bid
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="row">
+                <div class="col-md-6">
+
+                    <mat-form-field>
+                        <input matInput placeholder="From account" [(ngModel)]="bid.from">
+                    </mat-form-field>
+                </div>
+                <div class="col-md-6">
+                    <mat-form-field>
+                        <input matInput placeholder="Value in wei" [(ngModel)]="bid.value">
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="text-right">
+                <button mat-raised-button color="accent">Make bid</button>
+            </div>
+
+        </mat-expansion-panel>
+
+    </div>
+</div>

@@ -1,42 +1,80 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
-import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HomepageComponent } from './components/homepage/homepage.component';
+import { HouseComponent } from './components/house/house.component';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FlexLayoutModule } from '@angular/flex-layout';
+import { FormsModule } from '@angular/forms';
 
 import {
   MatCardModule,
   MatButtonModule,
-  MatCheckboxModule,
+  MatExpansionModule,
   MatIconModule,
   MatToolbarModule,
   MatFormFieldModule,
-  MatInputModule
+  MatInputModule,
+  MatSnackBarModule,
+  MatTableModule
 } from '@angular/material';
+import { Routes, RouterModule } from '@angular/router';
+import { AccountService } from './services/account.service';
+import { DutchComponent } from './dutch/dutch.component';
+import { VickeryComponent } from './vickery/vickery.component';
+import { DutchDetailComponent } from './dutch-detail/dutch-detail.component';
+import { VickeryDetailComponent } from './vickery-detail/vickery-detail.component';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: HouseComponent
+  },
+  {
+    path: 'dutch',
+    component: DutchComponent
+  },
+  {
+    path: 'vickery',
+    component: VickeryComponent
+  },
+  {
+    path: 'dutch/:address',
+    component: DutchDetailComponent
+  },
+  {
+    path: 'vickery/:address',
+    component: VickeryDetailComponent
+  }
+];
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomepageComponent
+    HouseComponent,
+    DutchComponent,
+    VickeryComponent,
+    DutchDetailComponent,
+    VickeryDetailComponent
   ],
   imports: [
+    RouterModule.forRoot(routes),
     BrowserModule,
-    AppRoutingModule,
+    FormsModule,
     // material
     BrowserAnimationsModule,
-    FlexLayoutModule,
     MatCardModule,
     MatIconModule,
     MatToolbarModule,
     MatButtonModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatExpansionModule,
+    MatSnackBarModule,
+    MatTableModule
   ],
-  providers: [],
+  providers: [
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

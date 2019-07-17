@@ -1,0 +1,66 @@
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <mat-card>
+            <mat-card-header>
+                <div mat-card-avatar></div>
+                <mat-card-title>New Dutch auction</mat-card-title>
+                <mat-card-subtitle>Create and deploy a new dutch auction</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+
+                <div>
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput placeholder="Item name" [(ngModel)]="dutch.itemName">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput placeholder="Seller address" [(ngModel)]="dutch.seller">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput placeholder="Reserve price" [(ngModel)]="dutch.reservePrice">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput placeholder="Initial price" [(ngModel)]="dutch.initialPrice">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput placeholder="Last for blocks" [(ngModel)]="dutch.lastForBlocks">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput placeholder="Strategy address" [(ngModel)]="dutch.strategyAddress">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                </div>
+
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button style="float: right" color="accent" (click)="deploy()">Deploy</button>
+                <button mat-button routerLink="/">Cancel</button>
+            </mat-card-actions>
+        </mat-card>
+
+    </div>
+</div>

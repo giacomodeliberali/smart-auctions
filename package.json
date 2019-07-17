@@ -23,7 +23,9 @@
   "homepage": "https://github.com/giacomodeliberali/smart-auctions#readme",
   "dependencies": {
     "truffle": "^5.0.22",
-    "truffle-assertions": "^0.9.1",
     "truffle-test-helpers": "^0.2.0"
+  },
+  "devDependencies": {
+    "truffle-assertions": "^0.9.1"
   }
 }

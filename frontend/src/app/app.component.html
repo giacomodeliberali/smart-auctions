@@ -1,13 +1,30 @@
-<div fxLayout="column wrap" fxFill>
-  <mat-toolbar fxLayout="wrap" color="primary">
-    <h1>
-      Smart auctions on Ethereum
-    </h1>
-</mat-toolbar>
+<div>
+  <mat-toolbar color="primary">
+    <a routerLink="/">
+      <h1>
+        Smart auctions on Ethereum
+      </h1>
+    </a>
+  </mat-toolbar>
 
-<div fxFlex="calc(100% - 64px)"> 
-  <router-outlet></router-outlet>
-</div>
-    
-  
+  <div class="p-15">
+
+    <mat-expansion-panel style="margin-bottom: 15px;">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{accountService.currentAccount}}
+        </mat-panel-title>
+        <mat-panel-description>
+          Your account
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <p>This is the account from which you are sending the transactions.</p>
+
+    </mat-expansion-panel>
+
+    <router-outlet></router-outlet>
+  </div>
+
+
 </div>
