@@ -52,6 +52,20 @@ export class DutchComponent {
       return;
     }
 
+    const linearStrategyAddress = await this.linearStrategyFactory
+      .attach(this.dutch.strategy)
+      .deployed()
+      .then(instance => instance.address)
+      .catch(() => null);
+
+    if (!linearStrategyAddress) {
+      localStorage.removeItem("linearStrategyAddress")
+      this.dutch.strategy = "";
+      this.snackBar.open("Select a valid strategy before deploy", "Ok", { duration: 5000 });
+      return;
+    }
+
+
     localStorage.setItem("linearStrategyAddress", this.dutch.strategy);
 
 
