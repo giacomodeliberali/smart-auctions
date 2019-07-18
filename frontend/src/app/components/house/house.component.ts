@@ -1,13 +1,11 @@
 import { Component, OnInit, ViewChild, Inject, Input, NgZone } from '@angular/core';
 import { MatExpansionPanel, MatSnackBar } from '@angular/material';
-import Web3 from 'web3';
-import { WEB3 } from '../../services/tokens';
-import DutchAuctionJson from '../../../../../build/contracts/DutchAuction.json';
-import AuctionsHouseJson from '../../../../../build/contracts/AuctionsHouse.json';
 import { AccountService } from '../../services/account.service';
-import { ContractsService } from 'src/app/services/contracts.service';
 import { ReturnStatement } from '@angular/compiler';
 import { Router } from '@angular/router';
+import { ethers } from 'ethers';
+import { RpcProvider, AuctionHouseFactory } from '../../services/tokens';
+import AuctionsHouseJson from '../../../../../build/contracts/AuctionsHouse.json';
 
 interface Auction {
   name: string;
@@ -30,10 +28,10 @@ export class HouseComponent implements OnInit {
 
 
   constructor(
-    @Inject(WEB3) private web3: Web3,
+    @Inject(RpcProvider) private provider: ethers.providers.Web3Provider,
+    @Inject(AuctionHouseFactory) private auctionHouseFactory: ethers.ContractFactory,
     private snackBar: MatSnackBar,
     private accountService: AccountService,
-    private contractsService: ContractsService,
     private router: Router,
     private ngZone: NgZone) {
 
@@ -42,6 +40,9 @@ export class HouseComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchHouseEvents();
+
+    const contract = this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount);
+    contract.on("NewAuction", () => this.fetchHouseEvents());
   }
 
   private setHouseAddress(newAddress: string) {
@@ -71,15 +72,20 @@ export class HouseComponent implements OnInit {
       return;
     }
 
-    const contract = await this.contractsService.getContractAtAddress(AuctionsHouseJson.abi, this.accountService.houseCurrentAccount);
-    console.log(contract)
-    const events = await contract.getPastEvents("NewAuction", {});
-    console.log("events of house => ", events)
+    console.log(await this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount).getAuctions())
 
-    console.log("Owner of house => ", await contract.methods.owner().call())
-    console.log("auctionIndex of house => ", await contract.methods.getAuctionsCount().call())
-    console.log("getAuctions of house => ", await contract.methods.getAuctions().call())
+    const logs = await this.provider.getLogs({ fromBlock: 0, toBlock: 'latest' })
+    const houseInterface = new ethers.utils.Interface(AuctionsHouseJson.abi);
 
+    this.dataSource = logs.map(log => {
+      const parsed = houseInterface.parseLog(log);
+      if (parsed)
+        return {
+          address: parsed.values["0"],
+          type: parsed.values["1"],
+          name: parsed.values["2"]
+        };
+    }).filter(p => !!p);
   }
 
   private clickAuction(auction: Auction) {
@@ -87,31 +93,9 @@ export class HouseComponent implements OnInit {
   }
 
   private async deployNewHouse() {
-
-    const contract = new this.web3.eth.Contract(AuctionsHouseJson.abi as any);
-
-    const gas = await contract.deploy({
-      data: AuctionsHouseJson.bytecode
-    }).estimateGas();
-
-    contract.deploy({
-      data: AuctionsHouseJson.bytecode
-    })
-      .send({
-        from: this.accountService.currentAccount,
-        gas: gas
-      })
-      .on('confirmation', async (confirmationNumber, receipt) => {
-        this.ngZone.run(() => {
-          const contractAddress = receipt.contractAddress;
-          const instance = new this.web3.eth.Contract(AuctionsHouseJson.abi as any, contractAddress);
-          this.setHouseAddress(instance.address);
-          this.snackBar.open("The house has been deployed", "Ok", { duration: 5000 });
-        });
-      })
-      .on('error', (error) => {
-        console.error(error)
-      });
+    const instance = await this.auctionHouseFactory.deploy()
+    this.setHouseAddress(instance.address);
+    this.snackBar.open("The house has been deployed", "Ok", { duration: 5000 });
   }
 
 }

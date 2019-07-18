@@ -16,6 +16,13 @@
                                     [value]="dutch.address">
                             </mat-form-field>
                         </div>
+
+                        <div class="col-md-6" *ngIf="dutch.isClosed">
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Auction winner"
+                                    [value]="dutch.bidder">
+                            </mat-form-field>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -80,7 +87,7 @@
                 <div class="col-md-6">
 
                     <mat-form-field>
-                        <input matInput placeholder="From account" [(ngModel)]="bid.from">
+                        <input matInput placeholder="From account" [readonly]="true" [value]="bid.from">
                     </mat-form-field>
                 </div>
                 <div class="col-md-6">

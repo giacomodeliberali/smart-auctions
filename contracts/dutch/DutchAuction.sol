@@ -5,7 +5,7 @@ import "../AbstractAuction.sol";
 
 contract DutchAuction is AbstractAuction {
     // The address of the winning bidder
-    address bidder;
+    address public bidder;
 
     // The initial price
     uint initialPrice;

@@ -1,6 +1,4 @@
 import { Component, Inject, ChangeDetectorRef, NgZone } from '@angular/core';
-import Web3 from 'web3';
-import { WEB3 } from './services/tokens';
 import TruffleContract from 'truffle-contract';
 
 import LinearStrategyJson from '../../../build/contracts/LinearStrategy.json';
@@ -19,7 +17,6 @@ export class AppComponent {
   private _window: any = window;
 
   constructor(
-    @Inject(WEB3) private web3: Web3,
     private accountService: AccountService,
     private snackBar: MatSnackBar,
     private ngZone: NgZone,

@@ -11,6 +11,7 @@ export class DutchAuction {
   isOver: boolean;
   owner: string;
   auctionType: string;
+  bidder: string;
 
   constructor(item?: Partial<DutchAuction>) {
     if (item)
