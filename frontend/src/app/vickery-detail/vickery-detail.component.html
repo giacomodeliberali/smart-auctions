@@ -1,1 +1,118 @@
-<p>vickery-detail works!</p>
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Vickery auction</mat-card-title>
+                <mat-card-subtitle>You can interact with this contract</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+
+                <div *ngIf="vickery">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Contract address"
+                                    [value]="vickery.address">
+                            </mat-form-field>
+                        </div>
+
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Seller" [value]="vickery.seller">
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Item name" [value]="vickery.itemName">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="State"
+                                    [value]="PhaseType[vickery.state]">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+
+
+                    <div class="text-right"
+                        *ngIf="vickery.owner == accountService.currentAccount || vickery.seller == accountService.currentAccount">
+                        <button mat-raised-button color="accent">Terminate</button>
+                    </div>
+
+                </div>
+
+            </mat-card-content>
+        </mat-card>
+
+        <mat-expansion-panel style="margin-top: 15px;" [expanded]="true"
+            *ngIf="vickery && vickery.state == PhaseType.Commitment">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    Make a blind bid
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="row">
+                <div class="col-md-6">
+
+                    <mat-form-field>
+                        <input matInput placeholder="Deposit (wei)" [(ngModel)]="bid.deposit">
+                    </mat-form-field>
+                </div>
+                <div class="col-md-6">
+
+                    <mat-form-field>
+                        <input matInput placeholder="Hash" [(ngModel)]="bid.hash">
+                    </mat-form-field>
+                </div>
+            </div>
+            <div class="text-right">
+                <button mat-raised-button color="accent" (click)="makeBid()">Make bid</button>
+            </div>
+
+        </mat-expansion-panel>
+
+        <mat-expansion-panel style="margin-top: 15px;" [expanded]="true"
+            *ngIf="vickery && vickery.state == PhaseType.Withdrawal">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    Withdrawal half of your deposit
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="text-right">
+                <button mat-raised-button color="accent" (click)="withdrawal()">Withdrawal</button>
+            </div>
+
+        </mat-expansion-panel>
+
+        <mat-expansion-panel style="margin-top: 15px;" [expanded]="true"
+        *ngIf="vickery && vickery.state == PhaseType.Opening">
+        <mat-expansion-panel-header>
+            <mat-panel-title>
+                Open your previous bid
+            </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="row">
+            <div class="col-md-6">
+
+                <mat-form-field>
+                    <input matInput placeholder="Nonce" [(ngModel)]="bid.nonce">
+                </mat-form-field>
+            </div>
+        </div>
+        <div class="text-right">
+            <button mat-raised-button color="accent" (click)="openBid()">Open bid</button>
+        </div>
+
+    </mat-expansion-panel>
+
+    </div>
+</div>
