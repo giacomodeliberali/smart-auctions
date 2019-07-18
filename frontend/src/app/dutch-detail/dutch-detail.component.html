@@ -6,7 +6,7 @@
                 <mat-card-subtitle>You can interact with this contract</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-
+                <mat-progress-bar color="primary" mode="indeterminate" *ngIf="!dutch"></mat-progress-bar>
                 <div *ngIf="dutch">
 
                     <div class="row">
@@ -19,8 +19,7 @@
 
                         <div class="col-md-6" *ngIf="dutch.isClosed">
                             <mat-form-field>
-                                <input matInput [readonly]="true" placeholder="Auction winner"
-                                    [value]="dutch.bidder">
+                                <input matInput [readonly]="true" placeholder="Auction winner" [value]="dutch.bidder">
                             </mat-form-field>
                         </div>
                     </div>
@@ -75,8 +74,7 @@
             </mat-card-content>
         </mat-card>
 
-        <mat-expansion-panel style="margin-top: 15px;" [expanded]="true"
-            *ngIf="bid && dutch && !dutch.isClosed">
+        <mat-expansion-panel style="margin-top: 15px;" [expanded]="true" *ngIf="bid && dutch && !dutch.isClosed">
             <mat-expansion-panel-header>
                 <mat-panel-title>
                     Make a bid

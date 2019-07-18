@@ -6,7 +6,6 @@
                 <mat-card-subtitle>Create and deploy a new linear strategy for the Dutch auction</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-
                 <div>
                     <div class="row">
                         <div class="col-md-12">
@@ -20,7 +19,8 @@
 
             </mat-card-content>
             <mat-card-actions class="text-right">
-                <button mat-button color="accent" (click)="deployLinearStrategy()" [disabled]="dutch.strategy || dutch.strategy.length > 0">Deploy strategy</button>
+                <button mat-button color="accent" (click)="deployLinearStrategy()"
+                    [disabled]="dutch.strategy || dutch.strategy.length > 0">Deploy strategy</button>
             </mat-card-actions>
         </mat-card>
 

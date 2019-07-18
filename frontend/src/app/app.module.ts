@@ -16,7 +16,8 @@ import {
   MatFormFieldModule,
   MatInputModule,
   MatSnackBarModule,
-  MatTableModule
+  MatTableModule,
+  MatProgressBarModule
 } from '@angular/material';
 import { Routes, RouterModule } from '@angular/router';
 import { AccountService } from './services/account.service';
@@ -71,7 +72,8 @@ const routes: Routes = [
     MatInputModule,
     MatExpansionModule,
     MatSnackBarModule,
-    MatTableModule
+    MatTableModule,
+    MatProgressBarModule
   ],
   providers: [
   ],

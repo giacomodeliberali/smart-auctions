@@ -23,6 +23,17 @@ export class VickeryDetailComponent implements OnInit {
     deposit: string
   } = {} as any;
 
+  private vickeryEvents = [
+    "StateUpdatedEvent",
+    "WithdrawalEvent",
+    "BidEvent",
+    "OpenBidEvent",
+    "InvalidNonceEvent",
+    "FinalizeEvent",
+    "RefoundEvent",
+    "NotEnoughValidBiddersEvent"
+  ]
+
   constructor(private route: ActivatedRoute,
     public accountService: AccountService,
     @Inject(RpcProvider) private provider: ethers.providers.Web3Provider,
@@ -31,7 +42,7 @@ export class VickeryDetailComponent implements OnInit {
   }
 
   private async fetchAuction() {
-    return new VickeryAuction({
+    this.vickery = new VickeryAuction({
       state: await this.contractInstance.state(),
       itemName: await this.contractInstance.itemName(),
       seller: await this.contractInstance.seller(),
@@ -47,13 +58,23 @@ export class VickeryDetailComponent implements OnInit {
     try {
       this.contractInstance = await this.vickeryAuctionFactory.attach(contractAddress).deployed();
 
-      this.vickery = await this.fetchAuction();
+      // react to events updating UI
+      this.vickeryEvents.forEach(event => {
+        this.contractInstance.on(event, () => this.fetchAuction());
+      });
+
+      this.fetchAuction();
 
     } catch (ex) {
       console.log(ex)
     }
+  }
 
-
+  ngOnDestroy() {
+    // unsubscribe
+    this.vickeryEvents.forEach(event => {
+      this.contractInstance.removeAllListeners(event);
+    });
   }
 
   private async makeBid() {
@@ -72,7 +93,7 @@ export class VickeryDetailComponent implements OnInit {
       const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
       this.snackBar.open(msg || "Cannot send the bid", "Ok", { duration: 5000 });
     } finally {
-      this.vickery = await this.fetchAuction();
+      this.fetchAuction();
     }
   }
 
@@ -84,7 +105,7 @@ export class VickeryDetailComponent implements OnInit {
       const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
       this.snackBar.open(msg || "Cannot ask withdrawal", "Ok", { duration: 5000 });
     } finally {
-      this.vickery = await this.fetchAuction();
+      this.fetchAuction();
     }
   }
 
@@ -96,7 +117,7 @@ export class VickeryDetailComponent implements OnInit {
       const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
       this.snackBar.open(msg || "Cannot open your bid", "Ok", { duration: 5000 });
     } finally {
-      this.vickery = await this.fetchAuction();
+      this.fetchAuction();
     }
   }
 

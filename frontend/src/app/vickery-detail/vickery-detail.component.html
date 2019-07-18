@@ -6,7 +6,7 @@
                 <mat-card-subtitle>You can interact with this contract</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-
+                    <mat-progress-bar color="primary" mode="indeterminate" *ngIf="!vickery"></mat-progress-bar>
                 <div *ngIf="vickery">
 
                     <div class="row">
