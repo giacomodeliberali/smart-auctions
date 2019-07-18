@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone, Inject } from '@angular/core';
+import { Component, OnInit, NgZone, Inject, ChangeDetectorRef } from '@angular/core';
 import LinearStrategyJson from '../../../../build/contracts/LinearStrategy.json';
 import AuctionsHouseJson from '../../../../build/contracts/AuctionsHouse.json';
 import { AccountService } from '../services/account.service';
@@ -24,7 +24,8 @@ export class DutchComponent {
     @Inject(AuctionHouseFactory) private auctionHouseFactory: ethers.ContractFactory,
     private accountService: AccountService,
     private snackBar: MatSnackBar,
-    private router: Router) {
+    private router: Router,
+    private changeDetector: ChangeDetectorRef) {
 
     this.dutch = new DutchAuction({
       initialPrice: 2000,
@@ -32,6 +33,11 @@ export class DutchComponent {
       reservePrice: 1000,
       lastForBlocks: 100,
       strategy: localStorage.getItem("linearStrategyAddress") || null
+    });
+
+    (window as any).ethereum.on('accountsChanged', accounts => {
+      this.accountService.currentAccount = accounts[0];
+      this.changeDetector.detectChanges();
     });
   }
 
@@ -46,6 +52,8 @@ export class DutchComponent {
   }
 
   async deployDutchAuction() {
+
+    try{
 
     if (!this.dutch.strategy) {
       this.snackBar.open("First deploy or select a strategy", "Ok", { duration: 5000 });
@@ -83,6 +91,11 @@ export class DutchComponent {
 
     this.snackBar.open("The dutch auction has been deployed", "Ok", { duration: 5000 });
     this.router.navigate(['/']);
+
+    }catch(ex){
+      console.error(ex);
+      this.snackBar.open("Error deploying the auction", "Ok", { duration: 5000 });      
+    }
 
   }
 

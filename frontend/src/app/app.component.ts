@@ -17,7 +17,7 @@ export class AppComponent {
   private _window: any = window;
 
   constructor(
-    private accountService: AccountService,
+    public accountService: AccountService,
     private snackBar: MatSnackBar,
     private ngZone: NgZone,
     private changeDetector: ChangeDetectorRef) {

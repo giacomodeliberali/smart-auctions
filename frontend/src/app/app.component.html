@@ -8,20 +8,25 @@
   </mat-toolbar>
 
   <div class="p-15">
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
 
-    <mat-expansion-panel style="margin-bottom: 15px;">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          {{accountService.currentAccount}}
-        </mat-panel-title>
-        <mat-panel-description>
-          Your account
-        </mat-panel-description>
-      </mat-expansion-panel-header>
+        <mat-expansion-panel style="margin-bottom: 15px;">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              {{accountService.currentAccount}}
+            </mat-panel-title>
+            <mat-panel-description>
+              Your account
+            </mat-panel-description>
+          </mat-expansion-panel-header>
 
-      <p>This is the account from which you are sending the transactions.</p>
+          <p>This is the account from which you are sending the transactions.</p>
 
-    </mat-expansion-panel>
+        </mat-expansion-panel>
+
+      </div>
+    </div>
 
     <router-outlet></router-outlet>
   </div>

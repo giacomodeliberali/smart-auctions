@@ -19,12 +19,14 @@ interface Auction {
 })
 export class HouseComponent implements OnInit {
 
-  private tmpHouseAddress: string;
+  public tmpHouseAddress: string;
 
-  private displayedColumns: Array<string> = [
+  public isLoading = true;
+
+  public displayedColumns: Array<string> = [
     "name", "type", "address"
   ];
-  private dataSource: Array<Auction> = []
+  public dataSource: Array<Auction>;
 
   private houseInstance: ethers.Contract;
 
@@ -33,7 +35,7 @@ export class HouseComponent implements OnInit {
     @Inject(RpcProvider) private provider: ethers.providers.Web3Provider,
     @Inject(AuctionHouseFactory) private auctionHouseFactory: ethers.ContractFactory,
     private snackBar: MatSnackBar,
-    private accountService: AccountService,
+    public accountService: AccountService,
     private router: Router,
     private ngZone: NgZone) {
 
@@ -66,6 +68,7 @@ export class HouseComponent implements OnInit {
   private async onHouseAddressBlur() {
     if (this.tmpHouseAddress.length == 42) {
       this.setHouseAddress(this.tmpHouseAddress);
+      this.houseInstance = await this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount).deployed();
       this.snackBar.open("The house address has been updated", "Ok", { duration: 5000 });
     }
 
@@ -77,14 +80,18 @@ export class HouseComponent implements OnInit {
   }
 
   private async fetchHouseEvents() {
+    this.isLoading = true;
     if (!this.accountService.houseCurrentAccount) {
       this.dataSource.splice(0);
+      this.isLoading = false;
       return;
     }
 
-    console.log(await this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount).getAuctions())
-
-    const logs = await this.provider.getLogs({ fromBlock: 0, toBlock: 'latest' })
+    const blockNumber = await this.provider.getBlockNumber();
+    let start = 0;
+    if (blockNumber > 100)
+      start = blockNumber - 100;
+    const logs = await this.provider.getLogs({ fromBlock: start, toBlock: 'latest' })
     const houseInterface = new ethers.utils.Interface(AuctionsHouseJson.abi);
 
     this.dataSource = logs.map(log => {
@@ -96,6 +103,8 @@ export class HouseComponent implements OnInit {
           name: parsed.values["2"]
         };
     }).filter(p => !!p);
+
+    this.isLoading = false;
   }
 
   private clickAuction(auction: Auction) {

@@ -17,7 +17,7 @@ export class DutchDetailComponent implements OnInit {
   public dutch: DutchAuctionDto;
   private contractInstance: ethers.Contract;
 
-  private bid: {
+  public bid: {
     from: string,
     value: number
   };
