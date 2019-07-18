@@ -46,14 +46,20 @@ export class DutchDetailComponent implements OnInit {
 
   async ngOnInit() {
     const contractAddress = this.route.snapshot.paramMap.get("address");
-    this.contractInstance = this.dutchAuctionFactory.attach(contractAddress);
 
-    this.dutch = await this.fetchAuction();
+    try {
+      this.contractInstance = await this.dutchAuctionFactory.attach(contractAddress).deployed();
 
-    this.bid = {
-      from: this.accountService.currentAccount,
-      value: 100
+      this.dutch = await this.fetchAuction();
+
+      this.bid = {
+        from: this.accountService.currentAccount,
+        value: 100
+      }
+    } catch (ex) {
+      console.log(ex)
     }
+
 
   }
 

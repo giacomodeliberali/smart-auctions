@@ -26,6 +26,8 @@ export class HouseComponent implements OnInit {
   ];
   private dataSource: Array<Auction> = []
 
+  private houseInstance: ethers.Contract;
+
 
   constructor(
     @Inject(RpcProvider) private provider: ethers.providers.Web3Provider,
@@ -38,11 +40,19 @@ export class HouseComponent implements OnInit {
     this.setHouseAddress(localStorage.getItem("houseAddress") || "")
   }
 
-  ngOnInit(): void {
-    this.fetchHouseEvents();
-
-    const contract = this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount);
-    contract.on("NewAuction", () => this.fetchHouseEvents());
+  async ngOnInit() {
+    try {
+      this.houseInstance = await this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount).deployed();
+      this.fetchHouseEvents();
+      this.houseInstance.on("NewAuction", () => this.fetchHouseEvents());
+    } catch (ex) {
+      localStorage.removeItem("houseAddress");
+      this.setHouseAddress("");
+      this.snackBar.open("The house address does not exist", "Ok", { duration: 5000 });
+    }
+  }
+  ngOnDestroy() {
+    this.houseInstance.removeAllListeners("NewAuction");
   }
 
   private setHouseAddress(newAddress: string) {
@@ -93,8 +103,8 @@ export class HouseComponent implements OnInit {
   }
 
   private async deployNewHouse() {
-    const instance = await this.auctionHouseFactory.deploy()
-    this.setHouseAddress(instance.address);
+    this.houseInstance = await this.auctionHouseFactory.deploy()
+    this.setHouseAddress(this.houseInstance.address);
     this.snackBar.open("The house has been deployed", "Ok", { duration: 5000 });
   }
 
