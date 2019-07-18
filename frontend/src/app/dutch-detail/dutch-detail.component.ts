@@ -27,7 +27,6 @@ export class DutchDetailComponent implements OnInit {
     @Inject(RpcProvider) private provider: ethers.providers.Web3Provider,
     @Inject(DutchAuctionFactory) private dutchAuctionFactory: ethers.ContractFactory,
     private snackBar: MatSnackBar) {
-
   }
 
   private async fetchAuction() {
@@ -76,8 +75,8 @@ export class DutchDetailComponent implements OnInit {
       })
       this.snackBar.open("The bid has been sent", "Ok", { duration: 5000 });
     } catch (ex) {
-      console.log(ex);
-      this.snackBar.open("Cannot send the bid", "Ok", { duration: 5000 });
+      const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
+      this.snackBar.open(msg || "Cannot send the bid", "Ok", { duration: 5000 });
     } finally {
       this.dutch = await this.fetchAuction();
     }

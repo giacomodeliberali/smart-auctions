@@ -99,7 +99,7 @@ export class HouseComponent implements OnInit {
   }
 
   private clickAuction(auction: Auction) {
-    this.router.navigate(['dutch', auction.address])
+    this.router.navigate([auction.type.toLowerCase(), auction.address])
   }
 
   private async deployNewHouse() {

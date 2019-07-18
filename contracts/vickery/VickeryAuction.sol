@@ -30,10 +30,10 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
     uint commitmentPhaseLength;
 
     // The withdrawal phase length in blocks
-    uint whithdrawlPhaseLength;
+    uint withdrawalPhaseLength;
 
     // The bid phase length in blocks
-    uint bidPhaseLangth;
+    uint bidPhaseLength;
 
     // The min mandatory deposit to make a commitment
     uint deposit;
@@ -82,12 +82,12 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
 
     // Initializ the contract with required parameters
     constructor(string memory _itemName, address payable _seller,
-                uint _commitmentPhaseLength, uint _whithdrawlPhaseLength,
-                uint _bidPhaseLangth, uint _deposit)
+                uint _commitmentPhaseLength, uint _withdrawalPhaseLength,
+                uint _bidPhaseLength, uint _deposit)
     AbstractAuction(_itemName, _seller, msg.sender, "Dutch") public {
         commitmentPhaseLength = _commitmentPhaseLength;
-        whithdrawlPhaseLength = _whithdrawlPhaseLength;
-        bidPhaseLangth = _bidPhaseLangth;
+        withdrawalPhaseLength = _withdrawalPhaseLength;
+        bidPhaseLength = _bidPhaseLength;
         deposit = _deposit;
         deployBlockNumber = block.number;
         state = PhaseType.Commitment;
@@ -110,10 +110,10 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
         if (block.number < deployBlockNumber + commitmentPhaseLength) {
             updateState(PhaseType.Commitment);
         } else if (block.number >= deployBlockNumber + commitmentPhaseLength &&
-            block.number < deployBlockNumber + commitmentPhaseLength + whithdrawlPhaseLength) {
+            block.number < deployBlockNumber + commitmentPhaseLength + withdrawalPhaseLength) {
             updateState(PhaseType.Withdrawal);
-        } else if (block.number >= deployBlockNumber + commitmentPhaseLength + whithdrawlPhaseLength &&
-            block.number < deployBlockNumber + commitmentPhaseLength + whithdrawlPhaseLength + bidPhaseLangth) {
+        } else if (block.number >= deployBlockNumber + commitmentPhaseLength + withdrawalPhaseLength &&
+            block.number < deployBlockNumber + commitmentPhaseLength + withdrawalPhaseLength + bidPhaseLength) {
             updateState(PhaseType.Opening);
         } else {
             updateState(PhaseType.Closed);

@@ -1,1 +1,66 @@
-<p>vickery works!</p>
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>New Vickery auction</mat-card-title>
+                <mat-card-subtitle>Create and deploy a new vickery auction</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+
+                <div>
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput placeholder="Item name" [(ngModel)]="vickery.itemName">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput placeholder="Seller address" [(ngModel)]="vickery.seller">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput placeholder="Commitment phase length" [(ngModel)]="vickery.commitmentPhaseLength">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput placeholder="Withdrawal phase length" [(ngModel)]="vickery.withdrawalPhaseLength">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput placeholder="Bid phase length" [(ngModel)]="vickery.bidPhaseLength">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+
+                            <mat-form-field>
+                                <input matInput placeholder="Min deposit (wei)" [(ngModel)]="vickery.deposit">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                </div>
+
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button style="float: right" color="accent" (click)="deployVickeryAuction()">Deploy</button>
+                <button mat-button routerLink="/">Cancel</button>
+            </mat-card-actions>
+        </mat-card>
+
+    </div>
+</div>
