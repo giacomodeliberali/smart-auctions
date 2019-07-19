@@ -5,9 +5,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "github": "ng build --prod --base-href https://giacomodeliberali.github.io/smart-auctions",
+    "lint": "ng lint"
   },
   "private": true,
   "dependencies": {
