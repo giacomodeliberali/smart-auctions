@@ -1,5 +1,4 @@
-<div>
-  <mat-toolbar color="primary">
+<mat-toolbar color="primary">
     <a routerLink="/">
       <h1>
         Smart auctions on Ethereum
@@ -7,6 +6,7 @@
     </a>
   </mat-toolbar>
 
+<div *ngIf="_window.ethereum">
   <div class="p-15">
     <div class="row">
       <div class="col-md-8 offset-md-2">
@@ -34,6 +34,10 @@
 
     <router-outlet></router-outlet>
   </div>
+</div>
 
-
+<div *ngIf="!_window.ethereum">
+  <p class="p-3">
+    This DAPP requires Metamask. Please ensure to have Metamask installed.
+  </p>
 </div>
