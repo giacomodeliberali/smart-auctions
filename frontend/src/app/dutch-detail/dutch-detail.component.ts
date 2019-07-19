@@ -1,11 +1,12 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { DutchAuction as DutchAuctionDto } from '../models/dutch-auction.model';
+import { DutchAuction } from '../models/dutch-auction.model';
 import { ActivatedRoute } from '@angular/router';
 import { AccountService } from '../services/account.service';
 import { MatSnackBar } from '@angular/material';
 import { ethers } from 'ethers';
 import { DutchAuctionFactory, RpcProvider } from '../services/tokens';
 import { CDK_CONNECTED_OVERLAY_SCROLL_STRATEGY } from '@angular/cdk/overlay/typings/overlay-directives';
+import { DutchAuctionBid } from '../models/interfaces';
 
 @Component({
   selector: 'app-dutch-detail',
@@ -14,13 +15,17 @@ import { CDK_CONNECTED_OVERLAY_SCROLL_STRATEGY } from '@angular/cdk/overlay/typi
 })
 export class DutchDetailComponent implements OnInit {
 
-  public dutch: DutchAuctionDto;
+  /** The form values */
+  public dutch: DutchAuction;
+
+  /** The DutchAuction contract instance */
   private contractInstance: ethers.Contract;
 
-  public bid: {
-    from: string,
-    value: number
-  };
+  /** The bid values */
+  public bid: DutchAuctionBid;
+
+  /** Indicate if a loading is in progress */
+  public isLoading: boolean;
 
   constructor(private route: ActivatedRoute,
     public accountService: AccountService,
@@ -29,9 +34,10 @@ export class DutchDetailComponent implements OnInit {
     private snackBar: MatSnackBar) {
   }
 
+  /** Fetches the auction from blockchain */
   private async fetchAuction() {
     const price = await this.contractInstance.getCurrentPrice();
-    return new DutchAuctionDto({
+    return new DutchAuction({
       isClosed: await this.contractInstance.isClosed() || await this.contractInstance.isOver(),
       currentPrice: price ? price.toString() : "",
       itemName: await this.contractInstance.itemName(),
@@ -42,11 +48,14 @@ export class DutchDetailComponent implements OnInit {
     });
   }
 
-
+  /** Fetch the auction's details */
   async ngOnInit() {
+
     const contractAddress = this.route.snapshot.paramMap.get("address");
 
+
     try {
+      this.isLoading = true;
       this.contractInstance = await this.dutchAuctionFactory.attach(contractAddress).deployed();
 
       this.dutch = await this.fetchAuction();
@@ -57,28 +66,32 @@ export class DutchDetailComponent implements OnInit {
       }
     } catch (ex) {
       console.log(ex)
+    } finally {
+      this.isLoading = false;
     }
-
-
   }
 
+  /** Make a new bid from current address */
   private async makeBid() {
     try {
+      this.isLoading = true;
 
       let gasLimit = await this.provider.estimateGas(this.contractInstance.makeBid);
       gasLimit = gasLimit.mul(4);
 
-
-      await this.contractInstance.makeBid({
+      const tx = await this.contractInstance.makeBid({
         value: ethers.utils.bigNumberify(this.bid.value),
-        gasLimit: ethers.utils.bigNumberify(3000000)
-      })
-      this.snackBar.open("The bid has been sent", "Ok", { duration: 5000 });
+        gasLimit: gasLimit
+      });
+      await this.provider.waitForTransaction(tx.hash); //FIXME: Yes or no?
+
+      this.snackBar.open("The bid has been processed", "Ok", { duration: 5000 });
     } catch (ex) {
       const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
       this.snackBar.open(msg || "Cannot send the bid", "Ok", { duration: 5000 });
     } finally {
       this.dutch = await this.fetchAuction();
+      this.isLoading = false;
     }
   }
 

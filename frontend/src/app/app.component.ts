@@ -26,7 +26,7 @@ export class AppComponent {
 
   ngOnInit() {
     this.init();
-
+    // subscribe to metamask's account change event
     this._window.ethereum.on('accountsChanged', accounts => {
       this.accountService.currentAccount = accounts[0];
       this.changeDetector.detectChanges();
@@ -36,9 +36,7 @@ export class AppComponent {
     })
   }
 
-
-
-
+  /** Connects to metamask account */
   async init() {
     const accounts = await this._window.ethereum.enable();
     this.accountService.currentAccount = accounts[0];

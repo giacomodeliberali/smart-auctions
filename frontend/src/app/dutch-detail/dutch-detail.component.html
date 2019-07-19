@@ -95,8 +95,12 @@
                 </div>
             </div>
             <div class="text-right">
-                <button mat-raised-button color="accent" (click)="makeBid()">Make bid</button>
+                <button mat-raised-button color="accent" (click)="makeBid()" [disabled]="isLoading">
+                    Make bid
+                </button>
             </div>
+
+            <mat-progress-bar color="primary" mode="indeterminate" *ngIf="isLoading" style="margin-top: 15px"></mat-progress-bar>
 
         </mat-expansion-panel>
 

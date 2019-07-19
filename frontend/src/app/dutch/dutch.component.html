@@ -20,7 +20,9 @@
             </mat-card-content>
             <mat-card-actions class="text-right">
                 <button mat-button color="accent" (click)="deployLinearStrategy()"
-                    [disabled]="dutch.strategy || (dutch.strategy && dutch.strategy.length > 0)">Deploy strategy</button>
+                    [disabled]="dutch.strategy || (dutch.strategy && dutch.strategy.length > 0) || isLoading">
+                    <span>Deploy strategy</span>
+                </button>
             </mat-card-actions>
         </mat-card>
 
@@ -75,9 +77,15 @@
 
             </mat-card-content>
             <mat-card-actions>
-                <button mat-button style="float: right" color="accent" (click)="deployDutchAuction()">Deploy</button>
+                <button mat-button style="float: right" color="accent" (click)="deployDutchAuction()"
+                    [disabled]="isLoading">
+                    <span>Deploy</span>
+                </button>
                 <button mat-button routerLink="/">Cancel</button>
             </mat-card-actions>
+
+            <mat-progress-bar color="primary" mode="indeterminate" *ngIf="isLoading" style="margin-top: 15px"></mat-progress-bar>
+
         </mat-card>
 
     </div>
