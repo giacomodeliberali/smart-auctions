@@ -77,7 +77,7 @@ export class VickeryDetailComponent implements OnInit {
     });
   }
 
-  private async makeBid() {
+  public async makeBid() {
     try {
 
       let gasLimit = await this.provider.estimateGas(this.contractInstance.makeBid);
@@ -97,7 +97,7 @@ export class VickeryDetailComponent implements OnInit {
     }
   }
 
-  private async withdrawal() {
+  public async withdrawal() {
     try {
       await this.contractInstance.withdrawal()
       this.snackBar.open("Half of the deposit has been transferred back", "Ok", { duration: 5000 });
@@ -109,7 +109,7 @@ export class VickeryDetailComponent implements OnInit {
     }
   }
 
-  private async openBid() {
+  public async openBid() {
     try {
       await this.contractInstance.openBid(ethers.utils.bigNumberify(this.bid.nonce))
       this.snackBar.open("You opened successfully your bid", "Ok", { duration: 5000 });

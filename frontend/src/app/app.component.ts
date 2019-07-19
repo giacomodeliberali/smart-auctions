@@ -14,7 +14,7 @@ import { MatSnackBar } from '@angular/material';
 })
 export class AppComponent {
 
-  private _window: any = window;
+  public _window: any = window;
 
   constructor(
     public accountService: AccountService,

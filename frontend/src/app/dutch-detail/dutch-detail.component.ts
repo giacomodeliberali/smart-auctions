@@ -74,7 +74,7 @@ export class DutchDetailComponent implements OnInit {
   }
 
   /** Make a new bid from current address */
-  private async makeBid() {
+  public async makeBid() {
     try {
       this.isLoading = true;
 
@@ -96,7 +96,7 @@ export class DutchDetailComponent implements OnInit {
     }
   }
 
-  private async terminate() {
+  public async terminate() {
     try {
       this.isLoading = true;
       const tx = await this.contractInstance.terminate({

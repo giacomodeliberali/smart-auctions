@@ -76,7 +76,7 @@ export class HouseComponent implements OnInit {
   }
 
   /** Fetches the events from the blockchain */
-  private async loadHouseFromAddress() {
+  public async loadHouseFromAddress() {
     if (this.tmpHouseAddress.length == 42) {
       // a valid length address
       this.isLoading = true;
@@ -117,12 +117,12 @@ export class HouseComponent implements OnInit {
   }
 
   /** Go on contract detail page */
-  private clickAuction(auction: Auction) {
+  public clickAuction(auction: Auction) {
     this.router.navigate([auction.type.toLowerCase(), auction.address])
   }
 
   /** Deploy a new AuctionsHouse instance */
-  private async deployNewHouse() {
+  public async deployNewHouse() {
     try {
       this.isLoading = true;
       this.houseInstance = await this.auctionHouseFactory.deploy().then(contract => contract.deployed());
@@ -138,7 +138,7 @@ export class HouseComponent implements OnInit {
     }
   }
 
-  private emptyHouseAddress() {
+  public emptyHouseAddress() {
     this.setHouseAddress("");
   }
 
