@@ -36,3 +36,8 @@ a[href] {
   color: white;
   text-decoration: none;
 }
+
+button:focus,
+button:active {
+  outline: none !important;
+}
