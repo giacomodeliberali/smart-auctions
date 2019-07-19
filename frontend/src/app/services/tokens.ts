@@ -5,6 +5,7 @@ import AuctionsHouseJson from '../../../../build/contracts/AuctionsHouse.json';
 import DutchAuctionJson from '../../../../build/contracts/DutchAuction.json';
 import LinearStrategyJson from '../../../../build/contracts/LinearStrategy.json';
 import VickeryAuctionJson from '../../../../build/contracts/VickeryAuction.json';
+import AbstractAuctionJson from '../../../../build/contracts/AbstractAuction.json';
 
 export const RpcProvider = new InjectionToken<ethers.providers.Web3Provider>('web3Token', {
     providedIn: 'root',
@@ -46,4 +47,10 @@ export const VickeryAuctionFactory = new InjectionToken<ethers.ContractFactory>(
     providedIn: 'root',
     factory: () => {
         return new ethers.ContractFactory(VickeryAuctionJson.abi, VickeryAuctionJson.bytecode, inject(RpcProvider).getSigner()); }
+});
+
+export const AbstractAuctionFactory = new InjectionToken<ethers.ContractFactory>('AbstractAuctionFactory', {
+    providedIn: 'root',
+    factory: () => {
+        return new ethers.ContractFactory(AbstractAuctionJson.abi, AbstractAuctionJson.bytecode, inject(RpcProvider).getSigner()); }
 });

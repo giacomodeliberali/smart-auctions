@@ -6,6 +6,5 @@ export interface Auction {
 
 
 export interface DutchAuctionBid {
-  from: string;
   value: number;
 }

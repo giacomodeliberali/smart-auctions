@@ -25,6 +25,7 @@ import { DutchComponent } from './dutch/dutch.component';
 import { VickeryComponent } from './vickery/vickery.component';
 import { DutchDetailComponent } from './dutch-detail/dutch-detail.component';
 import { VickeryDetailComponent } from './vickery-detail/vickery-detail.component';
+import { ShortifyAddressPipe } from './pipes/shortify-address.pipe';
 
 const routes: Routes = [
   {
@@ -56,7 +57,8 @@ const routes: Routes = [
     DutchComponent,
     VickeryComponent,
     DutchDetailComponent,
-    VickeryDetailComponent
+    VickeryDetailComponent,
+    ShortifyAddressPipe
   ],
   imports: [
     RouterModule.forRoot(routes),

@@ -23,38 +23,53 @@ export class DutchComponent {
   /** Indicate if a loading is in progress */
   public isLoading: boolean;
 
+  /** Indicate if a loading is in progress regarding the LinearStrategy */
+  public isStrategyLoading: boolean;
+
   constructor(
     @Inject(LinearStrategyFactory) private linearStrategyFactory: ethers.ContractFactory,
     @Inject(AuctionHouseFactory) private auctionHouseFactory: ethers.ContractFactory,
     private accountService: AccountService,
     private snackBar: MatSnackBar,
     private router: Router,
+    private ngZone: NgZone,
     private changeDetector: ChangeDetectorRef) {
+
+
+  }
+
+  ngOnInit() {
+
+    if (!this.accountService.houseCurrentAccount) {
+      this.router.navigate(['/']);
+      this.snackBar.open("Before contract creation please select an AuctionHouse", "Ok", { duration: 5000 });
+      return;
+    }
 
     // initialize with dummy content
     this.dutch = new DutchAuction({
       initialPrice: 2000,
-      itemName: "Macbook Pro 15",
+      itemName: "MacBook Pro 15",
       reservePrice: 1000,
       lastForBlocks: 100,
       strategy: localStorage.getItem("linearStrategyAddress") || null
-    });
-
-    // refresh binding if metamask account changes
-    (window as any).ethereum.on('accountsChanged', accounts => {
-      this.accountService.currentAccount = accounts[0];
-      this.changeDetector.detectChanges();
     });
   }
 
   /** Deploy a new LinearStrategy contract */
   async deployLinearStrategy() {
     try {
-      const instance = await this.linearStrategyFactory.deploy();
+      this.isStrategyLoading = true;
+      const instance = await this.linearStrategyFactory
+        .deploy()
+        .then(contract => contract.deployed());
+
       this.dutch.strategy = instance.address;
       this.snackBar.open("The LinearStrategy has been deployed", "Ok", { duration: 5000 });
     } catch (ex) {
       this.snackBar.open("An error occurred while deploying the LinearStrategy", "Ok", { duration: 5000 });
+    } finally {
+      this.isStrategyLoading = false;
     }
   }
 
@@ -100,14 +115,17 @@ export class DutchComponent {
         this.dutch.strategy
       );
 
-      this.isLoading = false;
-      this.snackBar.open("The dutch auction has been deployed", "Ok", { duration: 5000 });
-      this.router.navigate(['/']);
+      this.snackBar.open("The dutch auction has been sent", "Ok", { duration: 5000 });
+      setTimeout(() => {
+        this.router.navigate(['/']);
+      }, 1000);
+
 
     } catch (ex) {
-      this.isLoading = false;
       console.error(ex);
       this.snackBar.open("Error deploying the auction", "Ok", { duration: 5000 });
+    } finally {
+      this.isLoading = false;
     }
 
   }

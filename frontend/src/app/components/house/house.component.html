@@ -4,7 +4,7 @@
         <mat-expansion-panel style="margin-bottom: 15px;" [expanded]="!accountService.houseCurrentAccount">
             <mat-expansion-panel-header>
                 <mat-panel-title>
-                    {{accountService.houseCurrentAccount}}
+                    {{accountService.houseCurrentAccount | shortifyAddress}}
                 </mat-panel-title>
 
                 <mat-panel-description>
@@ -12,13 +12,33 @@
                 </mat-panel-description>
             </mat-expansion-panel-header>
 
-            <mat-form-field>
-                <input matInput placeholder="House address" [(ngModel)]="tmpHouseAddress" (blur)="onHouseAddressBlur()">
-            </mat-form-field>
+            <div class="row">
+                <div class="col-md-6">
 
-            <button mat-raised-button color="accent" style="margin-left: 15px" (click)="deployNewHouse()">Or Deploy a
-                new
-                House</button>
+                    <mat-form-field>
+                        <input matInput type="text" placeholder="Insert an existing house address" [(ngModel)]="tmpHouseAddress">
+                        <button mat-button *ngIf="tmpHouseAddress" matSuffix mat-icon-button aria-label="Clear"
+                            (click)="emptyHouseAddress()">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </mat-form-field>
+
+                </div>
+                <div class="col-md-6">
+
+
+
+                    <button mat-stroked-button color="accent" (click)="loadHouseFromAddress()"
+                        *ngIf="(tmpHouseAddress || tmpHouseAddress.length > 0); else deployHouse">Load address</button>
+
+                    <ng-template #deployHouse>
+                        <button mat-stroked-button color="accent" (click)="deployNewHouse()">Or Deploy a new
+                            House</button>
+                    </ng-template>
+
+
+                </div>
+            </div>
 
         </mat-expansion-panel>
 
@@ -29,9 +49,11 @@
                 </mat-panel-title>
             </mat-expansion-panel-header>
 
-            <button mat-raised-button color="accent" routerLink="/dutch">Deploy a new Dutch auction</button>
-            <button mat-raised-button color="accent" style="margin-left: 15px" routerLink="/vickery">Deploy a new
-                Vickery auction</button>
+            <div class="text-center">
+
+                <button mat-stroked-button color="accent" routerLink="/dutch" class="mr-1">New Dutch</button>
+                <button mat-stroked-button color="accent" routerLink="/vickery" class="ml-1">New Vickery</button>
+            </div>
 
         </mat-expansion-panel>
 
@@ -64,7 +86,19 @@
                 <!-- Symbol Column -->
                 <ng-container matColumnDef="address">
                     <th mat-header-cell *matHeaderCellDef> Address </th>
-                    <td mat-cell *matCellDef="let element"> {{element.address}} </td>
+                    <td mat-cell *matCellDef="let element">
+                        {{element.address | shortifyAddress}}
+                    </td>
+                </ng-container>
+
+                <!-- Symbol Column -->
+                <ng-container matColumnDef="seller">
+                    <th mat-header-cell *matHeaderCellDef> Seller </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{element.seller | shortifyAddress}}
+                        <span class="badge badge-primary" *ngIf="element.seller == accountService.currentAccount"
+                            style="margin-left: 15px">You</span>
+                    </td>
                 </ng-container>
 
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

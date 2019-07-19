@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material';
 import { AccountService } from '../../services/account.service';
 import { Router } from '@angular/router';
 import { ethers } from 'ethers';
-import { RpcProvider, AuctionHouseFactory } from '../../services/tokens';
+import { RpcProvider, AuctionHouseFactory, VickeryAuctionFactory, DutchAuctionFactory, AbstractAuctionFactory } from '../../services/tokens';
 import { Auction } from '../../models/interfaces';
 import AuctionsHouseJson from '../../../../../build/contracts/AuctionsHouse.json';
 
@@ -22,7 +22,7 @@ export class HouseComponent implements OnInit {
 
   /** The columns of the table */
   public displayedColumns: Array<string> = [
-    "name", "type", "address"
+    "name", "type", "address", "seller"
   ];
 
   /** The items of the table */
@@ -35,6 +35,7 @@ export class HouseComponent implements OnInit {
   constructor(
     @Inject(RpcProvider) private provider: ethers.providers.Web3Provider,
     @Inject(AuctionHouseFactory) private auctionHouseFactory: ethers.ContractFactory,
+    @Inject(AbstractAuctionFactory) private abstractAuctionFactory: ethers.ContractFactory,
     private snackBar: MatSnackBar,
     public accountService: AccountService,
     private router: Router) {
@@ -42,16 +43,21 @@ export class HouseComponent implements OnInit {
     this.setHouseAddress(localStorage.getItem("houseAddress") || "")
   }
 
+  private registerListeners() {
+    this.houseInstance.on("NewAuction", () => this.fetchHouseEvents());
+  }
+
   /** Fetches the house past events and subscribe for events of new auctions */
   async ngOnInit() {
     try {
-      this.houseInstance = await this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount).deployed();
-      this.fetchHouseEvents();
-      this.houseInstance.on("NewAuction", () => this.fetchHouseEvents());
+      if (this.accountService.houseCurrentAccount) {
+        this.houseInstance = await this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount).deployed();
+        this.fetchHouseEvents();
+        this.registerListeners();
+      }
     } catch (ex) {
       localStorage.removeItem("houseAddress");
       this.setHouseAddress("");
-      this.snackBar.open("The house address does not exist", "Ok", { duration: 5000 });
     }
   }
 
@@ -70,14 +76,13 @@ export class HouseComponent implements OnInit {
   }
 
   /** Fetches the events from the blockchain */
-  private async onHouseAddressBlur() {
+  private async loadHouseFromAddress() {
     if (this.tmpHouseAddress.length == 42) {
       // a valid length address
       this.isLoading = true;
       this.setHouseAddress(this.tmpHouseAddress);
       this.houseInstance = await this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount).deployed();
       this.isLoading = false;
-      this.snackBar.open("The house address has been updated", "Ok", { duration: 5000 });
     }
 
     if (!this.tmpHouseAddress || this.tmpHouseAddress.length == 0) {
@@ -91,28 +96,22 @@ export class HouseComponent implements OnInit {
   private async fetchHouseEvents() {
     this.isLoading = true;
     if (!this.accountService.houseCurrentAccount) {
-      this.dataSource.splice(0);
+      if (this.dataSource)
+        this.dataSource.splice(0);
       this.isLoading = false;
       return;
     }
 
-    // FIXME: refactor and take data from auction arry in house
-    const blockNumber = await this.provider.getBlockNumber();
-    let start = 0;
-    if (blockNumber > 100)
-      start = blockNumber - 100;
-    const logs = await this.provider.getLogs({ fromBlock: start, toBlock: 'latest' })
-    const houseInterface = new ethers.utils.Interface(AuctionsHouseJson.abi);
-
-    this.dataSource = logs.map(log => {
-      const parsed = houseInterface.parseLog(log);
-      if (parsed)
-        return {
-          address: parsed.values["0"],
-          type: parsed.values["1"],
-          name: parsed.values["2"]
-        };
-    }).filter(p => !!p);
+    const auctionsAddresses: Array<string> = await this.houseInstance.getAuctions();
+    this.dataSource = await Promise.all(auctionsAddresses.map(async address => {
+      const contract = await this.abstractAuctionFactory.attach(address).deployed();
+      return {
+        name: await contract.itemName(),
+        type: await contract.auctionType(),
+        seller: await contract.seller(),
+        address: contract.address
+      }
+    }));
 
     this.isLoading = false;
   }
@@ -125,13 +124,22 @@ export class HouseComponent implements OnInit {
   /** Deploy a new AuctionsHouse instance */
   private async deployNewHouse() {
     try {
-      this.houseInstance = await this.auctionHouseFactory.deploy()
+      this.isLoading = true;
+      this.houseInstance = await this.auctionHouseFactory.deploy().then(contract => contract.deployed());
       this.setHouseAddress(this.houseInstance.address);
+      this.registerListeners();
+      this.fetchHouseEvents();
       this.snackBar.open("The house has been deployed", "Ok", { duration: 5000 });
     } catch (ex) {
       console.error(ex);
       this.snackBar.open("An error occurred while deploying the AuctionHouse", "Ok", { duration: 5000 });
+    } finally {
+      this.isLoading = false;
     }
+  }
+
+  private emptyHouseAddress() {
+    this.setHouseAddress("");
   }
 
 }

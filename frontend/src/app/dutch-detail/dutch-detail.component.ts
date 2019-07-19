@@ -7,6 +7,8 @@ import { ethers } from 'ethers';
 import { DutchAuctionFactory, RpcProvider } from '../services/tokens';
 import { CDK_CONNECTED_OVERLAY_SCROLL_STRATEGY } from '@angular/cdk/overlay/typings/overlay-directives';
 import { DutchAuctionBid } from '../models/interfaces';
+import { FallbackProvider } from 'ethers/providers';
+import { ContractHelperService } from '../services/contract-helper-service';
 
 @Component({
   selector: 'app-dutch-detail',
@@ -31,6 +33,7 @@ export class DutchDetailComponent implements OnInit {
     public accountService: AccountService,
     @Inject(RpcProvider) private provider: ethers.providers.Web3Provider,
     @Inject(DutchAuctionFactory) private dutchAuctionFactory: ethers.ContractFactory,
+    private contractHelper: ContractHelperService,
     private snackBar: MatSnackBar) {
   }
 
@@ -61,7 +64,6 @@ export class DutchDetailComponent implements OnInit {
       this.dutch = await this.fetchAuction();
 
       this.bid = {
-        from: this.accountService.currentAccount,
         value: 100
       }
     } catch (ex) {
@@ -76,19 +78,34 @@ export class DutchDetailComponent implements OnInit {
     try {
       this.isLoading = true;
 
-      let gasLimit = await this.provider.estimateGas(this.contractInstance.makeBid);
-      gasLimit = gasLimit.mul(4);
-
       const tx = await this.contractInstance.makeBid({
         value: ethers.utils.bigNumberify(this.bid.value),
-        gasLimit: gasLimit
+        gasLimit: await this.contractHelper.getEstimateGasFor(this.contractInstance.makeBid)
       });
+
       await this.provider.waitForTransaction(tx.hash); //FIXME: Yes or no?
 
       this.snackBar.open("The bid has been processed", "Ok", { duration: 5000 });
     } catch (ex) {
+      console.error(ex);
       const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
       this.snackBar.open(msg || "Cannot send the bid", "Ok", { duration: 5000 });
+    } finally {
+      this.dutch = await this.fetchAuction();
+      this.isLoading = false;
+    }
+  }
+
+  private async terminate() {
+    try {
+      this.isLoading = true;
+      const tx = await this.contractInstance.terminate({
+        gasLimit: await this.contractHelper.getEstimateGasFor(this.contractInstance.terminate)
+      });
+      await this.provider.waitForTransaction(tx.hash); //FIXME: Yes or no?
+      this.snackBar.open("The contract is now closed", "Ok", { duration: 5000 });
+    } catch (ex) {
+      this.snackBar.open("An error occurred while sending terminate command", "Ok", { duration: 5000 });
     } finally {
       this.dutch = await this.fetchAuction();
       this.isLoading = false;

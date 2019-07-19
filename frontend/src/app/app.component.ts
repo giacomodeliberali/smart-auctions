@@ -28,9 +28,10 @@ export class AppComponent {
     this.init();
     // subscribe to metamask's account change event
     this._window.ethereum.on('accountsChanged', accounts => {
-      this.accountService.currentAccount = accounts[0];
-      this.changeDetector.detectChanges();
       this.ngZone.run(() => {
+        // https://github.com/MetaMask/metamask-extension/issues/5826
+        this.accountService.currentAccount = this._window.web3.toChecksumAddress(accounts[0]);
+        this.changeDetector.detectChanges();
         this.snackBar.open("The account has been changed", "Ok", { duration: 5000 });
       });
     })
@@ -39,6 +40,14 @@ export class AppComponent {
   /** Connects to metamask account */
   async init() {
     const accounts = await this._window.ethereum.enable();
-    this.accountService.currentAccount = accounts[0];
+
+    // https://github.com/MetaMask/metamask-extension/issues/5826
+    this.accountService.currentAccount = this._window.web3.toChecksumAddress(accounts[0]);
+
+    this.accountService.houseCurrentAccount = localStorage.getItem("houseAddress");
+    console.log("Current account => " + this.accountService.currentAccount)
+    console.log("Current house => " + this.accountService.houseCurrentAccount)
+
+
   }
 }
