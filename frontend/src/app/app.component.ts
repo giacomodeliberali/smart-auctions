@@ -14,6 +14,7 @@ import { MatSnackBar } from '@angular/material';
 })
 export class AppComponent {
 
+  /** The untyped js window */
   public _window: any = window;
 
   constructor(
@@ -24,10 +25,11 @@ export class AppComponent {
 
   }
 
+  /** Subscribe to Metamask's account change event and triggers angular change detector */
   ngOnInit() {
-    this.init();
-    // subscribe to metamask's account change event
+
     if (this._window.ethereum) {
+      this.init();
       this._window.ethereum.on('accountsChanged', accounts => {
         this.ngZone.run(() => {
           // https://github.com/MetaMask/metamask-extension/issues/5826
@@ -44,15 +46,14 @@ export class AppComponent {
 
   /** Connects to metamask account */
   async init() {
-    if (this._window.ethereum) {
-      const accounts = await this._window.ethereum.enable();
+    this.accountService.houseCurrentAccount = localStorage.getItem("houseAddress");
 
-      // https://github.com/MetaMask/metamask-extension/issues/5826
-      this.accountService.currentAccount = this._window.web3.toChecksumAddress(accounts[0]);
+    const accounts = await this._window.ethereum.enable();
+    
+    // https://github.com/MetaMask/metamask-extension/issues/5826
+    this.accountService.currentAccount = this._window.web3.toChecksumAddress(accounts[0]);
 
-      this.accountService.houseCurrentAccount = localStorage.getItem("houseAddress");
-      console.log("Current account => " + this.accountService.currentAccount)
-      console.log("Current house => " + this.accountService.houseCurrentAccount)
-    }
+    console.log("Current account => " + this.accountService.currentAccount)
+    console.log("Current house => " + this.accountService.houseCurrentAccount)
   }
 }

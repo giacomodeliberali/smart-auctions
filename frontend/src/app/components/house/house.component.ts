@@ -113,6 +113,8 @@ export class HouseComponent implements OnInit {
       }
     }));
 
+    console.log(this.dataSource)
+
     this.isLoading = false;
   }
 

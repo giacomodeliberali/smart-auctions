@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
   templateUrl: './vickery.component.html',
   styleUrls: ['./vickery.component.scss']
 })
-export class VickeryComponent {
+export class VickeryComponent implements OnInit {
 
   public vickery: VickeryAuction;
 
@@ -22,20 +22,31 @@ export class VickeryComponent {
     private router: Router) {
 
     this.vickery = new VickeryAuction({
-      bidPhaseLength: "100",
-      withdrawalPhaseLength: "100",
-      commitmentPhaseLength: "100",
+      bidPhaseLength: "10",
+      withdrawalPhaseLength: "10",
+      commitmentPhaseLength: "10",
       itemName: "KTM 1190 Adventure R",
-      deposit: ethers.utils.parseEther("1").toString(),
+      deposit: ethers.utils.parseEther("0.001").toString(),
       seller: this.accountService.currentAccount
     });
   }
 
+  ngOnInit() {
+    if (!this.accountService.houseCurrentAccount) {
+      this.router.navigate(['/']);
+      this.snackBar.open("Before contract creation please select an AuctionHouse", "Ok", { duration: 5000 });
+      return;
+    }
+  }
+
   async deployVickeryAuction() {
     try {
+
+      console.log(this.vickery);
+
       const contract = this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount);
 
-      await contract.newVickery(
+      const tx = await contract.newVickery(
         this.vickery.itemName,
         this.vickery.seller,
         this.vickery.commitmentPhaseLength,
@@ -43,6 +54,8 @@ export class VickeryComponent {
         this.vickery.bidPhaseLength,
         this.vickery.deposit
       );
+
+      console.log(tx)
 
       this.snackBar.open("The vickery auction has been deployed", "Ok", { duration: 5000 });
       this.router.navigate(['/']);

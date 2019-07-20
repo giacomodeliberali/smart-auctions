@@ -6,15 +6,13 @@
                 <mat-card-subtitle>Create and deploy a new linear strategy for the Dutch auction</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-                <div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <mat-form-field>
-                                <input matInput placeholder="Strategy address" [(ngModel)]="dutch.strategy">
-                            </mat-form-field>
-                        </div>
-                    </div>
 
+                <div class="row">
+                    <div class="col-md-12">
+                        <mat-form-field>
+                            <input matInput placeholder="Strategy address" [(ngModel)]="dutch.strategy">
+                        </mat-form-field>
+                    </div>
                 </div>
 
             </mat-card-content>
@@ -24,7 +22,8 @@
                     <span>Deploy strategy</span>
                 </button>
             </mat-card-actions>
-            <mat-progress-bar color="primary" mode="indeterminate" *ngIf="isStrategyLoading" style="margin-top: 15px"></mat-progress-bar>
+            <mat-progress-bar color="primary" mode="indeterminate" *ngIf="isStrategyLoading" style="margin-top: 15px">
+            </mat-progress-bar>
         </mat-card>
 
         <mat-card>
@@ -85,7 +84,8 @@
                 <button mat-button routerLink="/">Cancel</button>
             </mat-card-actions>
 
-            <mat-progress-bar color="primary" mode="indeterminate" *ngIf="isLoading" style="margin-top: 15px"></mat-progress-bar>
+            <mat-progress-bar color="primary" mode="indeterminate" *ngIf="isLoading" style="margin-top: 15px">
+            </mat-progress-bar>
 
         </mat-card>
 

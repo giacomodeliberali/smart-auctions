@@ -84,7 +84,7 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
     constructor(string memory _itemName, address payable _seller,
                 uint _commitmentPhaseLength, uint _withdrawalPhaseLength,
                 uint _bidPhaseLength, uint _deposit)
-    AbstractAuction(_itemName, _seller, msg.sender, "Dutch") public {
+    AbstractAuction(_itemName, _seller, msg.sender, "Vickery") public {
         commitmentPhaseLength = _commitmentPhaseLength;
         withdrawalPhaseLength = _withdrawalPhaseLength;
         bidPhaseLength = _bidPhaseLength;

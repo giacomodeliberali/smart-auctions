@@ -20,7 +20,6 @@ import {
   MatProgressBarModule
 } from '@angular/material';
 import { Routes, RouterModule } from '@angular/router';
-import { AccountService } from './services/account.service';
 import { DutchComponent } from './dutch/dutch.component';
 import { VickeryComponent } from './vickery/vickery.component';
 import { DutchDetailComponent } from './dutch-detail/dutch-detail.component';
@@ -47,6 +46,10 @@ const routes: Routes = [
   {
     path: 'vickery/:address',
     component: VickeryDetailComponent
+  },
+  {
+    path: '**',
+    redirectTo: '/'
   }
 ];
 

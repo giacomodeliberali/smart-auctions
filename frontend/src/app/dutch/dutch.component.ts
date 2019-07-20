@@ -35,6 +35,15 @@ export class DutchComponent {
     private ngZone: NgZone,
     private changeDetector: ChangeDetectorRef) {
 
+    // initialize with dummy content
+    this.dutch = new DutchAuction({
+      initialPrice: 2000,
+      itemName: "MacBook Pro 15",
+      reservePrice: 1000,
+      lastForBlocks: 100,
+      strategy: localStorage.getItem("linearStrategyAddress") || null,
+      seller: this.accountService.currentAccount
+    });
 
   }
 
@@ -45,15 +54,6 @@ export class DutchComponent {
       this.snackBar.open("Before contract creation please select an AuctionHouse", "Ok", { duration: 5000 });
       return;
     }
-
-    // initialize with dummy content
-    this.dutch = new DutchAuction({
-      initialPrice: 2000,
-      itemName: "MacBook Pro 15",
-      reservePrice: 1000,
-      lastForBlocks: 100,
-      strategy: localStorage.getItem("linearStrategyAddress") || null
-    });
   }
 
   /** Deploy a new LinearStrategy contract */
@@ -115,10 +115,12 @@ export class DutchComponent {
         this.dutch.strategy
       );
 
-      this.snackBar.open("The dutch auction has been sent", "Ok", { duration: 5000 });
-      setTimeout(() => {
-        this.router.navigate(['/']);
-      }, 1000);
+      this.snackBar.open("The dutch auction has been sent", "Ok", { duration: 5000 })
+        .afterDismissed()
+        .toPromise()
+        .then(() => {
+          this.router.navigate(['/']);
+        });
 
 
     } catch (ex) {
