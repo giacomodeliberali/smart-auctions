@@ -5,3 +5,14 @@ This project involves the implementation of two types of auction systems using E
 Requirements: [readme.pdf](readme.pdf)
 
 Final report: [report.pdf](report.pdf)
+
+## Ropsten
+
+Root account:
+- 0xD094C4a1222E1fE5a430B600Da16753BAd5275ad
+
+House:
+- 0x64bdeB82261f78d363a4814668F6E4dAf194E850
+
+LinearStrategy:
+- 0x5805f5172ab1214cc6ceb803ff6571885276bc17
