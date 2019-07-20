@@ -37,7 +37,7 @@ export class AppComponent {
           this.changeDetector.detectChanges();
           this.snackBar.open("The account has been changed", "Ok", { duration: 5000 });
         });
-      })
+      });
     } else {
       this.snackBar.open("Please install and enable Metamask", "Ok");
     }

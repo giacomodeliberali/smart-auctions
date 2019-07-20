@@ -8,3 +8,9 @@ export interface Auction {
 export interface DutchAuctionBid {
   value: number;
 }
+
+export interface VickeryAuctionBid {
+  hash: string;
+  nonce: string;
+  value: string;
+}

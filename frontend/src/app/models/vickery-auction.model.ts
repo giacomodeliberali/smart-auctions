@@ -2,7 +2,8 @@ export enum PhaseType {
   Commitment,
   Withdrawal,
   Opening,
-  Closed
+  Closed,
+  Finalized
 }
 
 export class VickeryAuction {
@@ -11,6 +12,8 @@ export class VickeryAuction {
   seller: string;
   owner: string;
   state: PhaseType;
+  winner: string;
+  winnerPrice: string;
 
   commitmentPhaseLength: string;
   withdrawalPhaseLength: string;

@@ -16,7 +16,8 @@
                 <div class="col-md-6">
 
                     <mat-form-field>
-                        <input matInput type="text" placeholder="Insert an existing house address" [(ngModel)]="tmpHouseAddress">
+                        <input matInput type="text" placeholder="Insert an existing house address"
+                            [(ngModel)]="tmpHouseAddress">
                         <button mat-button *ngIf="tmpHouseAddress" matSuffix mat-icon-button aria-label="Clear"
                             (click)="emptyHouseAddress()">
                             <mat-icon>close</mat-icon>
@@ -39,6 +40,9 @@
 
                 </div>
             </div>
+
+            <mat-progress-bar color="primary" mode="indeterminate"
+                *ngIf="isLoading && !accountService.houseCurrentAccount"></mat-progress-bar>
 
         </mat-expansion-panel>
 
@@ -107,6 +111,31 @@
             </table>
             <mat-progress-bar color="primary" mode="indeterminate" *ngIf="isLoading"></mat-progress-bar>
 
+        </mat-expansion-panel>
+
+        <mat-expansion-panel style="margin-top: 15px;" *ngIf="isLocalNetwork">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    Manage mined block in network
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <mat-form-field>
+                        <input matInput placeholder="Current block number" [readonly]="true" [value]="currentBlock">
+                    </mat-form-field>
+                </div>
+                <div class="col-md-4">
+                    <mat-form-field>
+                        <input matInput placeholder="Mine this number of blocks" [(ngModel)]="mineNumberBlocks">
+                    </mat-form-field>
+                </div>
+                <div class="col-md-4">
+                    <button mat-stroked-button color="accent" (click)="mineBlocks()" [disabled]="isMiningBlock"
+                        class="mr-1">Mine blocks</button>
+                </div>
+            </div>
         </mat-expansion-panel>
 
     </div>

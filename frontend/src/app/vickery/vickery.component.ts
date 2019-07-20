@@ -26,7 +26,7 @@ export class VickeryComponent implements OnInit {
       withdrawalPhaseLength: "10",
       commitmentPhaseLength: "10",
       itemName: "KTM 1190 Adventure R",
-      deposit: ethers.utils.parseEther("0.001").toString(),
+      deposit: "100",
       seller: this.accountService.currentAccount
     });
   }
@@ -42,8 +42,6 @@ export class VickeryComponent implements OnInit {
   async deployVickeryAuction() {
     try {
 
-      console.log(this.vickery);
-
       const contract = this.auctionHouseFactory.attach(this.accountService.houseCurrentAccount);
 
       const tx = await contract.newVickery(
@@ -54,8 +52,6 @@ export class VickeryComponent implements OnInit {
         this.vickery.bidPhaseLength,
         this.vickery.deposit
       );
-
-      console.log(tx)
 
       this.snackBar.open("The vickery auction has been deployed", "Ok", { duration: 5000 });
       this.router.navigate(['/']);

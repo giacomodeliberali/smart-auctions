@@ -10,7 +10,8 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
         Commitment,
         Withdrawal,
         Opening,
-        Closed
+        Closed,
+        Finalzed
     }
 
     // Represent a bid performed by an address
@@ -36,7 +37,7 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
     uint bidPhaseLength;
 
     // The min mandatory deposit to make a commitment
-    uint deposit;
+    uint public deposit;
 
     // The block number when this contract is deployed at
     uint deployBlockNumber;
@@ -51,10 +52,16 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
     PhaseType public state;
 
     // Indicate if this contract has been finalized by the seller
-    bool isFinalized;
+    bool public isFinalized;
 
     // Indicates the number of bidders that opened their bid correctly
     uint validBidders;
+
+    // The auction winner
+    address public winner;
+
+    // The winner price;
+    uint256 public winnerPrice;
 
     // Indicate that the state of the auction has beemn updated
     event StateUpdatedEvent(PhaseType indexed state);
@@ -106,6 +113,7 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
     modifier ensureFreshState() {
 
         require(!isFinalized, "This aution has already been finalized.");
+        require(!isOver, "This aution has been closed.");
 
         if (block.number < deployBlockNumber + commitmentPhaseLength) {
             updateState(PhaseType.Commitment);
@@ -190,7 +198,7 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
     function finalize() external ensureFreshState payable {
 
         require(state == PhaseType.Closed, "You can not finalize the auction now.");
-        require(msg.sender == seller, "Only the seller can finalize this auction.");
+        require(msg.sender == seller || msg.sender == owner, "Only the seller/owner can finalize this auction.");
 
         if (validBidders < 2) {
             for (uint i = 0; i < bidders.length; i++) {
@@ -202,6 +210,8 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
             }
             // No enough valid bidders. All have been refounded
             emit NotEnoughValidBiddersEvent(validBidders);
+            isFinalized = true;
+            state = PhaseType.Finalzed;
             return;
         }
 
@@ -219,6 +229,8 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
                 }
             }
         }
+        winner = maxBidder;
+        winnerPrice = maxBidderAmount;
 
         // find second price
         for(uint i = 0; i < bidders.length; i++){
@@ -246,11 +258,28 @@ contract VickeryAuction is HashGenerator, AbstractAuction {
         }
 
         isFinalized = true;
+        state = PhaseType.Finalzed;
 
         emit FinalizeEvent(validBidders);
-
     }
 
+    // Terminate this auction (only the owner can call this function)
+    function terminate() external {
+        if (msg.sender == owner || msg.sender == seller) {
+            isOver = true;
+            updateState(PhaseType.Closed);
+        }
+    }
+
+    // Retrun true if the given address has already made a bid
+    function hasAlreadyBid(address _address) external view returns(bool){
+        return deposits[_address].exists;
+    }
+
+    // Update the contract state based on current block number
+    function refreshState() external ensureFreshState  returns(bool){
+        return true;
+    }
 
 
 }

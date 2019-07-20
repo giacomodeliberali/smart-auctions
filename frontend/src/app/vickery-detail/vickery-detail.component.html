@@ -2,11 +2,21 @@
     <div class="col-md-8 offset-md-2">
         <mat-card>
             <mat-card-header>
-                <mat-card-title>Vickery auction</mat-card-title>
+                <mat-card-title>
+                    <button mat-mini-fab (click)="refreshState()" color="primary" class="refresh-state"
+                        [disabled]="isLoading">
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                    Vickery auction
+
+                    <span class="badge badge-primary" *ngIf="vickery && vickery.owner == accountService.currentAccount"
+                        style="margin-left: 15px">Owner</span>
+                    <span class="badge badge-primary" *ngIf="vickery && vickery.seller == accountService.currentAccount"
+                        style="margin-left: 15px">Seller</span>
+                </mat-card-title>
                 <mat-card-subtitle>You can interact with this contract</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-                    <mat-progress-bar color="primary" mode="indeterminate" *ngIf="!vickery"></mat-progress-bar>
                 <div *ngIf="vickery">
 
                     <div class="row">
@@ -39,13 +49,46 @@
                     </div>
 
 
+                    <div class="row">
+                        <div class="col-md-6">
 
-                    <div class="text-right"
-                        *ngIf="vickery.owner == accountService.currentAccount || vickery.seller == accountService.currentAccount">
-                        <button mat-raised-button color="accent">Terminate</button>
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Deposit"
+                                    [value]="vickery.deposit + ' wei'">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+
+                    <div class="row" *ngIf="vickery.state == PhaseType.Finalized">
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Winner"
+                                    [value]="vickery.winner || 'None'">
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                            <mat-form-field>
+                                <input matInput [readonly]="true" placeholder="Winner price (wei)"
+                                    [value]="vickery.winnerPrice ? (vickery.winnerPrice + ' wei') : ''">
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+
+
+                    <div class="text-right">
+                        <button mat-raised-button color="accent" (click)="terminate()" [disabled]="isLoading"
+                            *ngIf="vickery.state != PhaseType.Closed && (vickery.owner == accountService.currentAccount || vickery.seller == accountService.currentAccount)">Terminate</button>
+
+                        <button mat-raised-button color="accent" (click)="finalize()" [disabled]="isLoading"
+                            *ngIf="vickery.state == PhaseType.Closed && (vickery.owner == accountService.currentAccount || vickery.seller == accountService.currentAccount)">Finalize</button>
                     </div>
 
                 </div>
+
+                <mat-progress-bar color="primary" mode="indeterminate" *ngIf="isLoading" class="mt-3">
+                </mat-progress-bar>
 
             </mat-card-content>
         </mat-card>
@@ -54,28 +97,38 @@
             *ngIf="vickery && vickery.state == PhaseType.Commitment">
             <mat-expansion-panel-header>
                 <mat-panel-title>
-                    Make a blind bid
+                    Bid
                 </mat-panel-title>
             </mat-expansion-panel-header>
 
-            <div class="row">
-                <div class="col-md-6">
 
-                    <mat-form-field>
-                        <input matInput placeholder="Deposit (wei)" [(ngModel)]="bid.deposit">
-                    </mat-form-field>
-                </div>
-                <div class="col-md-6">
-
-                    <mat-form-field>
-                        <input matInput placeholder="Hash" [(ngModel)]="bid.hash">
-                    </mat-form-field>
+            <div class="row" *ngIf="hasSubmittedBid">
+                <div class="col-xs-12">
+                    <p class="ml-3">
+                        <b>You already submitted a bid</b>
+                    </p>
                 </div>
             </div>
-            <div class="text-right">
-                <button mat-raised-button color="accent" (click)="makeBid()">Make bid</button>
-            </div>
 
+            <div *ngIf="!hasSubmittedBid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <mat-form-field>
+                            <input matInput type="number" placeholder="Value of your bid (wei)" [(ngModel)]="bid.value">
+                        </mat-form-field>
+                    </div>
+                    <div class="col-md-6">
+
+                        <mat-form-field>
+                            <input matInput type="number" placeholder="Nonce" [(ngModel)]="bid.nonce">
+                        </mat-form-field>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <button mat-raised-button color="accent" (click)="makeBid()" [disabled]="isLoading">Make
+                        bid</button>
+                </div>
+            </div>
         </mat-expansion-panel>
 
         <mat-expansion-panel style="margin-top: 15px;" [expanded]="true"
@@ -86,33 +139,39 @@
                 </mat-panel-title>
             </mat-expansion-panel-header>
 
-            <div class="text-right">
-                <button mat-raised-button color="accent" (click)="withdrawal()">Withdrawal</button>
+            <div class="text-center">
+                <button mat-raised-button color="accent" (click)="withdrawal()"
+                    [disabled]="isLoading">Withdrawal</button>
             </div>
 
         </mat-expansion-panel>
 
         <mat-expansion-panel style="margin-top: 15px;" [expanded]="true"
-        *ngIf="vickery && vickery.state == PhaseType.Opening">
-        <mat-expansion-panel-header>
-            <mat-panel-title>
-                Open your previous bid
-            </mat-panel-title>
-        </mat-expansion-panel-header>
+            *ngIf="vickery && vickery.state == PhaseType.Opening">
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    Open your previous bid
+                </mat-panel-title>
+            </mat-expansion-panel-header>
 
-        <div class="row">
-            <div class="col-md-6">
-
-                <mat-form-field>
-                    <input matInput placeholder="Nonce" [(ngModel)]="bid.nonce">
-                </mat-form-field>
+            <div class="row">
+                <div class="col-md-4">
+                    <mat-form-field>
+                        <input matInput placeholder="Value (wei)" [(ngModel)]="bid.value">
+                    </mat-form-field>
+                </div>
+                <div class="col-md-4">
+                    <mat-form-field>
+                        <input matInput placeholder="Nonce" [(ngModel)]="bid.nonce">
+                    </mat-form-field>
+                </div>
+                <div class="col-md-4">
+                    <button mat-raised-button color="accent" (click)="openBid()" [disabled]="isLoading">Open
+                        bid</button>
+                </div>
             </div>
-        </div>
-        <div class="text-right">
-            <button mat-raised-button color="accent" (click)="openBid()">Open bid</button>
-        </div>
 
-    </mat-expansion-panel>
+        </mat-expansion-panel>
 
     </div>
 </div>

@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material';
 import { AccountService } from '../../services/account.service';
-import { Router } from '@angular/router';
+import { Router, PreloadAllModules } from '@angular/router';
 import { ethers } from 'ethers';
 import { RpcProvider, AuctionHouseFactory, VickeryAuctionFactory, DutchAuctionFactory, AbstractAuctionFactory } from '../../services/tokens';
 import { Auction } from '../../models/interfaces';
@@ -18,7 +18,16 @@ export class HouseComponent implements OnInit {
   public tmpHouseAddress: string;
 
   /** Indicate if a loading is in progress from blockchain */
-  public isLoading = true;
+  public isLoading: boolean;
+
+  /** The current block number */
+  public currentBlock: number;
+
+  /** Indicate if the Evm is mining a block */
+  public isMiningBlock: boolean;
+
+  /** The number of block to mine */
+  public mineNumberBlocks: number = 10;
 
   /** The columns of the table */
   public displayedColumns: Array<string> = [
@@ -31,16 +40,21 @@ export class HouseComponent implements OnInit {
   /** The deployed AuctionHouse contract instance */
   private houseInstance: ethers.Contract;
 
+  /** Indicate if the current network provider is local or not */
+  public isLocalNetwork: boolean = false;
+
 
   constructor(
-    @Inject(RpcProvider) private provider: ethers.providers.Web3Provider,
+    @Inject(RpcProvider) public provider: ethers.providers.Web3Provider,
     @Inject(AuctionHouseFactory) private auctionHouseFactory: ethers.ContractFactory,
     @Inject(AbstractAuctionFactory) private abstractAuctionFactory: ethers.ContractFactory,
     private snackBar: MatSnackBar,
     public accountService: AccountService,
     private router: Router) {
 
-    this.setHouseAddress(localStorage.getItem("houseAddress") || "")
+    this.setHouseAddress(localStorage.getItem("houseAddress") || "");
+
+      this.isLocalNetwork = (window as any).web3.currentProvider.networkVersion == "5777"; // ganache
   }
 
   private registerListeners() {
@@ -59,6 +73,7 @@ export class HouseComponent implements OnInit {
       localStorage.removeItem("houseAddress");
       this.setHouseAddress("");
     }
+    this.currentBlock = await this.provider.getBlockNumber();
   }
 
   /** Unsubscribe from house events */
@@ -113,8 +128,6 @@ export class HouseComponent implements OnInit {
       }
     }));
 
-    console.log(this.dataSource)
-
     this.isLoading = false;
   }
 
@@ -142,6 +155,15 @@ export class HouseComponent implements OnInit {
 
   public emptyHouseAddress() {
     this.setHouseAddress("");
+  }
+
+  public async mineBlocks() {
+    this.isMiningBlock = true;
+    for (let i = 0; i < this.mineNumberBlocks; i++) {
+      await this.provider.send("evm_mine", []);
+    }
+    this.currentBlock = await this.provider.getBlockNumber();
+    this.isMiningBlock = false;
   }
 
 }

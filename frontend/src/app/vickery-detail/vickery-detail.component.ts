@@ -1,10 +1,13 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, NgZone, ChangeDetectorRef } from '@angular/core';
 import { VickeryAuction, PhaseType } from '../models/vickery-auction.model';
 import { ethers } from 'ethers';
 import { ActivatedRoute } from '@angular/router';
 import { AccountService } from '../services/account.service';
 import { RpcProvider, VickeryAuctionFactory } from '../services/tokens';
 import { MatSnackBar } from '@angular/material';
+import { VickeryAuctionBid } from '../models/interfaces';
+import { ContractHelperService } from '../services/contract-helper-service';
+import VickeryAuctionJson from '../../../../build/contracts/VickeryAuction.json';
 
 @Component({
   selector: 'app-vickery-detail',
@@ -12,113 +15,236 @@ import { MatSnackBar } from '@angular/material';
   styleUrls: ['./vickery-detail.component.scss']
 })
 export class VickeryDetailComponent implements OnInit {
+
+  /** The form values */
   public vickery: VickeryAuction;
+
+  /** The vickery auction instance */
   private contractInstance: ethers.Contract;
 
+  /** The vickery phase type enum exported for template */
   public PhaseType = PhaseType;
 
-  public bid: {
-    hash: string,
-    nonce: string,
-    deposit: string
-  } = {} as any;
+  /** Indicate if a loading is in progress */
+  public isLoading: boolean;
 
+  /** The bid binding object */
+  public bid = {} as VickeryAuctionBid;
+
+  /** Indicate if the current user has already submitted a bid */
+  public hasSubmittedBid: boolean;
+
+  /** 
+   * The vickery auction events 
+   * that need to be subscribed 
+   * in order to react and update UI 
+   */
   private vickeryEvents = [
     "StateUpdatedEvent",
     "WithdrawalEvent",
     "BidEvent",
-    "OpenBidEvent",
-    "InvalidNonceEvent",
-    "FinalizeEvent",
     "RefoundEvent",
     "NotEnoughValidBiddersEvent"
   ]
+
+  /** The listener used to update he hasAlreadyBid property */
+  private accountChangeHandler: Function;
 
   constructor(private route: ActivatedRoute,
     public accountService: AccountService,
     @Inject(RpcProvider) private provider: ethers.providers.Web3Provider,
     @Inject(VickeryAuctionFactory) private vickeryAuctionFactory: ethers.ContractFactory,
-    private snackBar: MatSnackBar) {
+    private contractHelper: ContractHelperService,
+    private snackBar: MatSnackBar,
+    private ngZone: NgZone,
+    private changeDetector: ChangeDetectorRef) {
   }
 
+  private listenEvents() {
+    this.contractInstance.on("InvalidNonceEvent", (sender: string, value: ethers.utils.BigNumber, nonce: ethers.utils.BigNumber) => {
+      if (sender == this.accountService.currentAccount)
+        this.snackBar.open("The submitted nonce/value hash is invalid", "Ok");
+    });
+    this.contractInstance.on("FinalizeEvent", () => {
+      this.snackBar.open("The auction has been finalized", "Ok");
+    });
+    this.contractInstance.on("OpenBidEvent", (sender: string, nonce: ethers.utils.BigNumber, value: ethers.utils.BigNumber) => {
+      if (sender == this.accountService.currentAccount)
+        this.snackBar.open(`You have opened your bid (${value.toString()} wei) successfully`, "Ok");
+    });
+
+    // react to events updating UI
+    this.vickeryEvents.forEach(event => {
+      this.contractInstance.on(event, () => this.fetchAuction());
+    });
+  }
+
+  /** Fetch the auction from address and subscribe to events */
+  async ngOnInit() {
+    const contractAddress = this.route.snapshot.paramMap.get("address");
+    try {
+      this.isLoading = true;
+      this.contractInstance = await this.vickeryAuctionFactory.attach(contractAddress).deployed();
+
+      this.listenEvents();
+
+      await this.checkIfAlreadyHasBid();
+      await this.fetchAuction();
+
+    } catch (ex) {
+      console.error("#1", ex)
+    } finally {
+      this.isLoading = false;
+    }
+
+    this.accountChangeHandler = () => {
+      setTimeout(() => {
+        this.ngZone.run(async () => {
+          await this.checkIfAlreadyHasBid();
+          this.changeDetector.detectChanges();
+        });
+      });
+    }
+    (window as any).ethereum.on('accountsChanged', this.accountChangeHandler);
+  }
+
+  public async refreshState() {
+    this.isLoading = true;
+    await this.contractInstance.refreshState();
+    await this.fetchAuction();
+    this.isLoading = false;
+  }
+
+  /** Checks if the current account has already submitted a bid to this contract instance */
+  private async checkIfAlreadyHasBid() {
+    this.hasSubmittedBid = await this.contractInstance.hasAlreadyBid(this.accountService.currentAccount);
+  }
+
+  /** Unsubscribe to all vickery events before leaving the page */
+  ngOnDestroy() {
+    if (this.contractInstance) {
+      this.vickeryEvents.forEach(event => {
+        this.contractInstance.removeAllListeners(event);
+      });
+    }
+    (window as any).ethereum.off('accountsChanged', this.accountChangeHandler);
+  }
+
+  /** Fetch the vickery from blockchain */
   private async fetchAuction() {
     this.vickery = new VickeryAuction({
       state: await this.contractInstance.state(),
       itemName: await this.contractInstance.itemName(),
       seller: await this.contractInstance.seller(),
       owner: await this.contractInstance.owner(),
-      address: this.contractInstance.address
+      deposit: await this.contractInstance.deposit(),
+      address: this.contractInstance.address,
+      winner: await this.contractInstance.winner(),
+      winnerPrice: await this.contractInstance.winnerPrice()
     });
   }
 
-
-  async ngOnInit() {
-    const contractAddress = this.route.snapshot.paramMap.get("address");
+  private async processTransaction(
+    fun: () => Promise<ethers.ContractTransaction>,
+    afterComplete?: () => any,
+    successMessage: string = "The transaction has been successfully deployed") {
 
     try {
-      this.contractInstance = await this.vickeryAuctionFactory.attach(contractAddress).deployed();
-
-      // react to events updating UI
-      this.vickeryEvents.forEach(event => {
-        this.contractInstance.on(event, () => this.fetchAuction());
-      });
-
-      this.fetchAuction();
-
+      this.isLoading = true;
+      const tx = await fun();
+      await this.provider.waitForTransaction(tx.hash);
+      if (afterComplete)
+        await afterComplete();
+      if (successMessage)
+        this.snackBar.open(successMessage, "Ok", { duration: 5000 });
     } catch (ex) {
-      console.log(ex)
-    }
-  }
-
-  ngOnDestroy() {
-    // unsubscribe
-    this.vickeryEvents.forEach(event => {
-      this.contractInstance.removeAllListeners(event);
-    });
-  }
-
-  public async makeBid() {
-    try {
-
-      let gasLimit = await this.provider.estimateGas(this.contractInstance.makeBid);
-      gasLimit = gasLimit.mul(4);
-
-
-      await this.contractInstance.makeBid(ethers.utils.formatBytes32String(this.bid.hash), {
-        value: ethers.utils.bigNumberify(this.bid.deposit),
-        gasLimit: ethers.utils.bigNumberify(gasLimit)
-      })
-      this.snackBar.open("The bid has been sent", "Ok", { duration: 5000 });
-    } catch (ex) {
-      const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
-      this.snackBar.open(msg || "Cannot send the bid", "Ok", { duration: 5000 });
+      this.notifyError(ex);
     } finally {
-      this.fetchAuction();
+      await this.fetchAuction();
+      this.isLoading = false;
     }
   }
 
-  public async withdrawal() {
-    try {
-      await this.contractInstance.withdrawal()
-      this.snackBar.open("Half of the deposit has been transferred back", "Ok", { duration: 5000 });
-    } catch (ex) {
-      const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
-      this.snackBar.open(msg || "Cannot ask withdrawal", "Ok", { duration: 5000 });
-    } finally {
-      this.fetchAuction();
-    }
+  private notifyError(ex: any) {
+    const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
+    this.snackBar.open(
+      msg || "An error occurred while processing the transaction",
+      "Ok",
+      { duration: 5000 }
+    );
   }
 
-  public async openBid() {
-    try {
-      await this.contractInstance.openBid(ethers.utils.bigNumberify(this.bid.nonce))
-      this.snackBar.open("You opened successfully your bid", "Ok", { duration: 5000 });
-    } catch (ex) {
-      const msg = ex.message.substr(ex.message.lastIndexOf("revert") + "revert".length);
-      this.snackBar.open(msg || "Cannot open your bid", "Ok", { duration: 5000 });
-    } finally {
-      this.fetchAuction();
-    }
+  /** Make a new blind bid */
+  public makeBid() {
+    this.processTransaction(
+      async () => {
+        const hash = ethers.utils.keccak256(ethers.utils.formatBytes32String(this.bid.value + this.bid.nonce));
+        return this.contractInstance.makeBid(hash, {
+          value: ethers.utils.bigNumberify(this.vickery.deposit),
+          gasLimit: await this.contractHelper.getEstimateGasFor(this.contractInstance.makeBid)
+        });
+      },
+      () => this.hasSubmittedBid = true,
+      "The bid has been deployed"
+    );
   }
+
+
+
+  /** Ask to withdrawal your deposit */
+  public withdrawal() {
+    this.processTransaction(
+      async () => {
+        return this.contractInstance.withdrawal({
+          gasLimit: await this.contractHelper.getEstimateGasFor(this.contractInstance.withdrawal)
+        });
+      },
+      null,
+      "Half of the deposit has been refunded"
+    );
+  }
+
+  /** Ask to open your previous bid */
+  public openBid() {
+    this.processTransaction(
+      async () => {
+        return this.contractInstance.openBid(ethers.utils.bigNumberify(this.bid.nonce), {
+          value: ethers.utils.bigNumberify(this.bid.value),
+          gasLimit: await this.contractHelper.getEstimateGasFor(this.contractInstance.openBid)
+        });
+      },
+      null,
+      null
+    );
+  }
+
+  /** Close this auction (self destruction) */
+  public terminate() {
+    this.processTransaction(
+      async () => {
+        return this.contractInstance.terminate({
+          gasLimit: await this.contractHelper.getEstimateGasFor(this.contractInstance.terminate)
+        });
+      },
+      null,
+      "The auction has been terminated"
+    );
+  }
+
+  /** Finalize the auction to elect winner */
+  public async finalize() {
+    this.processTransaction(
+      async () => {
+        return this.contractInstance.finalize({
+          gasLimit: await this.contractHelper.getEstimateGasFor(this.contractInstance.finalize)
+        });
+      },
+      null,
+      "The auction has been finalized"
+    );
+  }
+
+
+
 
 }
