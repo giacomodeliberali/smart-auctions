@@ -1,10 +1,10 @@
 <mat-toolbar color="primary">
-    <a routerLink="/">
-      <h1>
-        Smart auctions on Ethereum
-      </h1>
-    </a>
-  </mat-toolbar>
+  <a routerLink="/">
+    <h1>
+      Smart auctions on Ethereum
+    </h1>
+  </a>
+</mat-toolbar>
 
 <div *ngIf="_window.ethereum">
   <div class="p-15">
@@ -14,21 +14,6 @@
         <div class="text-right mb-3 p-2">
           <span class="badge badge-secondary">Address: {{accountService.currentAccount | shortifyAddress }}</span>
         </div>
-
-        <!--         <mat-expansion-panel style="margin-bottom: 15px;">
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              {{accountService.currentAccount | shortifyAddress }}
-            </mat-panel-title>
-            <mat-panel-description>
-              Your account
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-
-          <p>This is the account from which you are sending the transactions.</p>
-
-        </mat-expansion-panel> -->
-
       </div>
     </div>
 

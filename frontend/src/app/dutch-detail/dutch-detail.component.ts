@@ -39,10 +39,11 @@ export class DutchDetailComponent implements OnInit {
 
   /** Fetches the auction from blockchain */
   private async fetchAuction() {
-    const price = await this.contractInstance.getCurrentPrice();
+    const isClosed = await this.contractInstance.isClosed() || await this.contractInstance.isOver();
+    const price = isClosed ? "" : await this.contractInstance.getCurrentPrice();
     return new DutchAuction({
-      isClosed: await this.contractInstance.isClosed() || await this.contractInstance.isOver(),
-      currentPrice: price ? price.toString() : "",
+      isClosed: isClosed,
+      currentPrice: price.toString(),
       itemName: await this.contractInstance.itemName(),
       seller: await this.contractInstance.seller(),
       owner: await this.contractInstance.owner(),
